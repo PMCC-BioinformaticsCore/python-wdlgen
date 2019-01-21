@@ -66,7 +66,8 @@ class Task(WdlBase):
         class CommandInput(CommandArgument):
             def __init__(self, name: str, optional: bool=False, prefix: str=None, position: int=None,
                          separate_value_from_prefix: bool=True, default=None):
-                super().__init__(prefix, None, position, separate_value_from_prefix)
+                super().__init__(prefix=prefix, value=None, position=position,
+                                 separate_value_from_prefix=separate_value_from_prefix)
                 self.name = name
                 self.optional = optional
                 self.default = default
@@ -91,15 +92,14 @@ class Task(WdlBase):
             self.inputs = inputs if inputs else []
             self.arguments = arguments if arguments else []
 
-        def get_string(self, indent:int=0):
-            if not self.command:
-                raise Exception("No base 'command' has been set on this command object")
+        def get_string(self, indent: int=0):
+            base_command = self.command if self.command else ""
             if not (self.inputs or self.arguments):
-                return self.command
+                return base_command
 
             # build up command
             args = sorted([*self.inputs, *self.arguments], key=lambda a: a.position if a.position else 0)
-            command: str = self.command if isinstance(self.command, str) else " ".join(self.command)
+            command: str = base_command if isinstance(base_command, str) else " ".join(base_command)
             tb = "  "
             tbed_arg_indent = tb * (indent + 1)
 
