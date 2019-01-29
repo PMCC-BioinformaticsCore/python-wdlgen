@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from wdlgen.common import Input, Output
-from wdlgen.util import WdlBase
+from .common import Input, Output
+from .util import WdlBase
 
 
 class Task(WdlBase):

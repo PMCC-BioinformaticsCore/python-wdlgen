@@ -1,9 +1,9 @@
 from typing import List, Any
 import re
 
-from wdlgen.common import Input, Output
-from wdlgen.util import WdlBase
-from wdlgen.workflowcall import WorkflowCallBase
+from .common import Input, Output
+from .util import WdlBase
+from .workflowcall import WorkflowCallBase
 
 
 class Workflow(WdlBase):

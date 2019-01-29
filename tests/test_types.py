@@ -9,13 +9,13 @@ class TestTypes(unittest.TestCase):
         t = types.WdlType.parse_type("String")
         self.assertIsInstance(t, types.WdlType)
         self.assertEqual(t._type._type, "String")
-        self.assertFalse(t._optional)
+        self.assertFalse(t.optional)
 
     def test_parse_optional_string(self):
         t = types.WdlType.parse_type("String?")
         self.assertIsInstance(t, types.WdlType)
         self.assertEqual(t._type._type, "String")
-        self.assertTrue(t._optional)
+        self.assertTrue(t.optional)
 
     def test_parse_primitives(self):
         results = [types.WdlType.parse_type(t) for t in types.PrimitiveType.types]
