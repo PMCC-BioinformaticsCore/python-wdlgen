@@ -3,7 +3,7 @@ python:
 - '3.6'
 install:
 - pip install codecov coverage requests_mock nose_parameterized
-script: nosetests --with-coverage --cover-package=janis
+script: nosetests --with-coverage --cover-package=wdlgen
 # after_success: codecov
 deploy:
   provider: pypi

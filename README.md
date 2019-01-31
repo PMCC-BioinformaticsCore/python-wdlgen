@@ -1,5 +1,7 @@
 # python-wdlgen
 
+[![Build Status](https://travis-ci.org/illusional/python-wdlgen.svg?branch=master)](https://travis-ci.org/illusional/python-wdlgen)
+
 [Workflow Description Language](http://www.openwdl.org) is way to describe tasks and workflows in a "_human readable and writable way_". It was initially developed and offered by [Broad Institute](https://software.broadinstitute.org/) to be paired with their workflow engine [Cromwell](https://cromwell.readthedocs.io/en/stable/), however it has since been made open source with other engines such as [Toil](http://toil.readthedocs.io/en/3.14.0/running/wdl.html) and [DNAnexus\*](https://github.com/dnanexus/dxWDL).
 
 It's based almost exclusively off the version [1.0 Workflow Description Language specification](https://github.com/openwdl/wdl/blob/master/versions/1.0/SPEC.md#task-inputs).
