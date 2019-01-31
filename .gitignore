@@ -1,2 +1,7 @@
 __pycache__/
 .idea/
+.DS_Store
+**/**/DS_Store
+build/
+dist/
+illusional.wdlgen.egg-info

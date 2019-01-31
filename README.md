@@ -10,9 +10,10 @@ I needed an easy way to generate some _BASIC_ WDL through some in memory objects
 
 ## Installation
 
-**Goal:** Put on PIP or similar.
+```
+pip install illusional.wdlgen
+```
 
-Otherwise gitsubmodules might be your saviour here unfortunately.
 
 ## General support
 
