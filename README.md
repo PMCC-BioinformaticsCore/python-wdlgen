@@ -16,7 +16,6 @@ I needed an easy way to generate some _BASIC_ WDL through some in memory objects
 pip install illusional.wdlgen
 ```
 
-
 ## General support
 
 This software is provided as-is, without warranty of any kind ... and so on.
