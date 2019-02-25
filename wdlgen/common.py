@@ -22,10 +22,19 @@ class Input(WdlBase):
         return self.get_string_from_type(wd)
 
     def get_string_from_type(self, wdtype):
+        expression = self.expression
+        requires_quotes = not (expression is None or isinstance(expression, bool) or isinstance(expression, int) or isinstance(expression, float))
+
+        if isinstance(expression, bool):
+            expression = "true" if expression else "false"
+
+        if requires_quotes:
+            expression = f'"{expression}"'
+
         return self.format.format(
             type=wdtype,
             name=self.name,
-            def_w_equals=(" = \"{val}\"".format(val=self.expression) if self.expression else "")
+            def_w_equals=((" = " + expression) if expression is not None else "")
         )
 
 
