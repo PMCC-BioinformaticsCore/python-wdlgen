@@ -9,7 +9,7 @@ from .workflowcall import WorkflowCallBase
 class Workflow(WdlBase):
 
     def __init__(self, name, inputs: List[Input]=None, outputs: List[str]=None, calls: List[WorkflowCallBase]=None,
-                 imports: List[Any]=None):
+                 imports: List[Any]=None, version="draft-2"):
         """
 
         :param name:
@@ -27,8 +27,11 @@ class Workflow(WdlBase):
         self.outputs = outputs if outputs else []
         self.calls = calls if calls else []
         self.imports = imports if imports else []
+        self.version = version
 
         self.format = """
+version {version}
+
 {imports_block}
 
 workflow {name} {{
@@ -51,7 +54,7 @@ workflow {name} {{
                     ins.extend(tb + ii for ii in wd)
                 else:
                     ins.append(tb + wd)
-            inputs_block = "\n".join(ins)
+            inputs_block = f"{tb}input {{\n" + "\n".join(ins) + f"\n{tb}}}"
 
         if self.outputs:
             outs = []
@@ -84,7 +87,8 @@ workflow {name} {{
             inputs_block=inputs_block,
             output_block=output_block,
             call_block=call_block,
-            imports_block=imports_block
+            imports_block=imports_block,
+            version=self.version
         )
 
     class WorkflowImport(WdlBase):

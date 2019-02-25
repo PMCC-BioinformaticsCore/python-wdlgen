@@ -14,9 +14,11 @@ class PrimitiveType:
     kString = "String"
     kFile = "File"
 
+    kDirectory = "Directory"    # development branch
+
     DEF_TYPE = kString
 
-    types = [kBoolean, kInt, kFloat, kFile, kString]
+    types = [kBoolean, kInt, kFloat, kFile, kString, kDirectory]
 
     def __init__(self, prim_type):
         if prim_type not in self.types:
@@ -166,3 +168,4 @@ Int = WdlType(PrimitiveType(PrimitiveType.kInt))
 Float = WdlType(PrimitiveType(PrimitiveType.kFloat))
 File = WdlType(PrimitiveType(PrimitiveType.kFile))
 String = WdlType(PrimitiveType(PrimitiveType.kString))
+Directory = WdlType(PrimitiveType(PrimitiveType.kDirectory))
