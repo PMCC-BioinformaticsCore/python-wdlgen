@@ -4,7 +4,16 @@
 
 [Workflow Description Language](http://www.openwdl.org) is way to describe tasks and workflows in a "_human readable and writable way_". It was initially developed and offered by [Broad Institute](https://software.broadinstitute.org/) to be paired with their workflow engine [Cromwell](https://cromwell.readthedocs.io/en/stable/), however it has since been made open source with other engines such as [Toil](http://toil.readthedocs.io/en/3.14.0/running/wdl.html) and [DNAnexus\*](https://github.com/dnanexus/dxWDL).
 
-It's based almost exclusively off the version [1.0 Workflow Description Language specification](https://github.com/openwdl/wdl/blob/master/versions/1.0/SPEC.md#task-inputs).
+
+### WARNING
+
+This module now only generates developmental WDL, this includes Directories and wrapping all inputs in an input block. 
+To use this generated WDL, you must use a version of Cromwell higher than 37. 
+
+This module automatically includes `version development` in the Workflow and Task outputs. 
+The guides below may not reflect the current version of this repository, but will be updated soon.
+
+This syntax is based on the [Developmental Workflow Description Language specification](https://github.com/openwdl/wdl/blob/master/versions/development/SPEC.md).
 
 ## Motiviation
 
