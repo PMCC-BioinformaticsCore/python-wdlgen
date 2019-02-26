@@ -91,7 +91,7 @@ class Task(WdlBase):
                         print("separate_array take preferences over: separator, default, true, false")
                     if self.optional:
                         # Ugly optional workaround: https://github.com/openwdl/wdl/issues/25#issuecomment-315424063
-                        internal_pref = f'if defined({name}) then "--pre " else ""'
+                        internal_pref = f'if defined({name}) then "{bc}" else ""'
                         return f'${{{internal_pref}}}${{sep="{bc}" {name}}}'
                     return f'${{sep=" " prefix("{bc}", {name})}}'
 
