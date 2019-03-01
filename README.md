@@ -9,12 +9,14 @@
 ### WARNING
 
 This module now only generates developmental WDL, this includes Directories and wrapping all inputs in an input block. 
-To use this generated WDL, you must use a version of Cromwell higher than 37. 
+To use this generated WDL, you must use a version of **Cromwell higher than 37**. 
 
 This module automatically includes `version development` in the Workflow and Task outputs. 
 The guides below may not reflect the current version of this repository, but will be updated soon.
 
 This syntax is based on the [Developmental Workflow Description Language specification](https://github.com/openwdl/wdl/blob/master/versions/development/SPEC.md).
+
+___
 
 ## Motiviation
 
@@ -124,8 +126,12 @@ echo \
 
 The combination of the task and command outputs:
 ```wdl
+version development
+
 task task_name {
-  String taskGreeting
+  input {
+    String taskGreeting
+  }
   command {
     echo \
       -a ${taskGreeting} \
@@ -158,10 +164,14 @@ w.outputs.append(wdlgen.Output(wdlgen.WdlType.parse("File"), "standardOut", "tas
 
 Which outputs:
 ```wdl
+version development
+
 import "tools/tool_file.wdl"
 
 workflow workflow_name {
-  String inputGreeting
+  input { 
+    String inputGreeting
+  }
   call Q.namspaced_task_identifier as task_alias {
     input:
       taskGreeting=inputGreeting
@@ -184,9 +194,10 @@ You could also cause syntax errors in generated WDL by providing illegal charact
 - Improve code-level documentation.
 - Increase the testing coverage + quality of unit tests.
 - Better represent the WDL spec.
-- Find an easier distribution / release method - such as PIP.
-- Automate testing and delivery through TravisCI / CircleCI or similar.
+- ~~Find an easier distribution / release method - such as PIP.~~
+- ~~Automate testing and delivery through TravisCI / CircleCI or similar.~~
 - Validate each value by [WDL's language specifications](https://github.com/openwdl/wdl/blob/master/versions/1.0/SPEC.md#language-specification).
+- Add support for structs
 
 ### Long goals
 - Write a documentation site.
