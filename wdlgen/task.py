@@ -34,6 +34,18 @@ class Task(WdlBase):
         def add_docker(self, docker):
             self.kwargs["docker"] = docker
 
+        def add_cpus(self, cpus):
+            self.kwargs["cpu"] = cpus
+
+        def add_memory(self, memory_gb):
+            self.kwargs["memory"] = f"{memory_gb}G"
+
+        def add_gcp_disk(self, disk_size_gb):
+            self.kwargs["disks"] = f"local-disk {disk_size_gb} SSD"
+
+        def add_gcp_boot_disk(self, disk_size_gb: int):
+            self.kwargs["bootDiskSizeGb"] = int(disk_size_gb)
+
     class Command(WdlBase):
         """
         Past the regular attributes, I've built the command generation here, because that's where
