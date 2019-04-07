@@ -51,9 +51,9 @@ workflow {name} {{
             for i in self.inputs:
                 wd = i.get_string()
                 if isinstance(wd, list):
-                    ins.extend(tb + ii for ii in wd)
+                    ins.extend(2 * tb + ii for ii in wd)
                 else:
-                    ins.append(tb + wd)
+                    ins.append(2 * tb + wd)
             inputs_block = f"{tb}input {{\n" + "\n".join(ins) + f"\n{tb}}}"
 
         if self.outputs:
