@@ -29,22 +29,23 @@ class Task(WdlBase):
             self.kwargs = kwargs
 
         def get_string(self):
-            return ['{k}: "{v}"'.format(k=k, v=v) for k,v in self.kwargs.items()]
+            return ['{k}: {v}'.format(k=k, v=v) for k,v in self.kwargs.items()]
 
         def add_docker(self, docker):
-            self.kwargs["docker"] = docker
+            self.kwargs["docker"] = f'"{docker}"'
 
         def add_cpus(self, cpus):
             self.kwargs["cpu"] = cpus
 
         def add_memory(self, memory_gb):
-            self.kwargs["memory"] = f"{memory_gb}G"
+            self.kwargs["memory"] = f'"{memory_gb}G"'
 
         def add_gcp_disk(self, disk_size_gb):
-            self.kwargs["disks"] = f"local-disk {disk_size_gb} SSD"
+            self.kwargs["disks"] = f'"local-disk {disk_size_gb} SSD"'
 
         def add_gcp_boot_disk(self, disk_size_gb: int):
             self.kwargs["bootDiskSizeGb"] = int(disk_size_gb)
+
 
     class Command(WdlBase):
         """
