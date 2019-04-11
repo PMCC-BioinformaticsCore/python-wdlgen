@@ -5,10 +5,11 @@ from .util import WdlBase
 
 
 class Input(WdlBase):
-    def __init__(self, data_type: WdlType, name: str, expression: str = None):
+    def __init__(self, data_type: WdlType, name: str, expression: str = None, requires_quotes=True):
         self.type = data_type
         self.name = name
         self.expression = expression
+        self.requires_quotes = requires_quotes
 
         self.format = "{type} {name}{def_w_equals}"
 
@@ -23,7 +24,10 @@ class Input(WdlBase):
 
     def get_string_from_type(self, wdtype):
         expression = self.expression
-        requires_quotes = not (expression is None or isinstance(expression, bool) or isinstance(expression, int) or isinstance(expression, float))
+        requires_quotes = self.requires_quotes and not (expression is None or
+                                                        isinstance(expression, bool) or
+                                                        isinstance(expression, int) or
+                                                        isinstance(expression, float))
 
         if isinstance(expression, bool):
             expression = "true" if expression else "false"
