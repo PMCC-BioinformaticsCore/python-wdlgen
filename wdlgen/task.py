@@ -29,7 +29,13 @@ class Task(WdlBase):
             self.kwargs = kwargs
 
         def get_string(self):
-            return ['{k}: {v}'.format(k=k, v=v) for k,v in self.kwargs.items()]
+            l = []
+            for k, v in self.kwargs.items():
+                val = v
+                if hasattr(v, 'get_string'):
+                    val = v.get_string()
+                l.append('{k}: {v}'.format(k=k, v=val))
+            return l
 
         def add_docker(self, docker):
             self.kwargs["docker"] = f'"{docker}"'
@@ -45,7 +51,6 @@ class Task(WdlBase):
 
         def add_gcp_boot_disk(self, disk_size_gb: int):
             self.kwargs["bootDiskSizeGb"] = int(disk_size_gb)
-
 
     class Command(WdlBase):
         """

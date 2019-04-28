@@ -4,6 +4,16 @@ from .types import WdlType
 from .util import WdlBase
 
 
+class IfThenElse(WdlBase):
+    def __init__(self, condition, value_if_true, value_if_false):
+        self.condition = condition
+        self.value_if_true = value_if_true
+        self.value_if_false = value_if_false
+
+    def get_string(self):
+        return f"if {self.condition} then {self.value_if_true} else {self.value_if_false}"
+
+
 class Input(WdlBase):
     def __init__(self, data_type: WdlType, name: str, expression: str = None, requires_quotes=True):
         self.type = data_type
@@ -31,6 +41,8 @@ class Input(WdlBase):
 
         if isinstance(expression, bool):
             expression = "true" if expression else "false"
+        elif hasattr(expression, 'get_string'):
+            expression = expression.get_string()
 
         if requires_quotes:
             expression = f'"{expression}"'
@@ -38,7 +50,7 @@ class Input(WdlBase):
         return self.format.format(
             type=wdtype,
             name=self.name,
-            def_w_equals=((" = " + expression) if expression is not None else "")
+            def_w_equals=((" = " + str(expression)) if expression is not None else "")
         )
 
 
