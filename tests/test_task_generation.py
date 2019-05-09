@@ -123,11 +123,11 @@ class TestWorkflowGeneration(unittest.TestCase):
         w = Workflow("test")
 
         w.calls.append(WorkflowCall(
-            TestTaskGeneration.test_hello_tasks()
+            TestTaskGeneration.test_hello_tasks().name
         ))
 
         w.calls.append(WorkflowCall(
-            TestTaskGeneration.test_hello_tasks(),
+            TestTaskGeneration.test_hello_tasks().name,
             alias="hello2",
             inputs_map={
                 "salutation": '"Greetings"',
@@ -141,8 +141,8 @@ class TestWorkflowGeneration(unittest.TestCase):
 class TestWorkflowScatter(unittest.TestCase):
     def test_call_scatter(self):
         sc = WorkflowScatter("i", "integers", [
-            WorkflowCall(Task("task1"), inputs_map={"num": "i"}),
-            WorkflowCall(Task("task2"), inputs_map={"num": "task1.output"})
+            WorkflowCall(Task("task1").name, inputs_map={"num": "i"}),
+            WorkflowCall(Task("task2").name, inputs_map={"num": "task1.output"})
         ])
 
         print(sc.get_string(indent=0))
