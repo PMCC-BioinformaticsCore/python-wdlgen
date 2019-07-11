@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = "v0.2.2"
+__version__ = "v0.2.3"
 
 DESCRIPTION = "Contains classes and helpers to generate WDL without worrying about the syntax. " \
               "This is primarily intended for generating WDL from other in-memory representations of a workflow."
