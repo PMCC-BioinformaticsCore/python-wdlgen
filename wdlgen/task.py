@@ -102,7 +102,7 @@ class Task(WdlBase):
                 name, array_sep, default, true, false = self.name, self.separator, self.default, self.true, self.false
 
                 pr = self.prefix if self.prefix else ""
-                bc = pr + (" " if self.separate else "")
+                bc = pr + (" " if self.separate and self.prefix else "")
 
                 if self.separate_arrays:
                     if array_sep or default or true or false:
@@ -113,9 +113,20 @@ class Task(WdlBase):
                         return f'${{{internal_pref}}}${{sep=" {bc}" {name}}}'
                     return f'${{sep=" " prefix("{bc}", {name})}}'
 
+                if array_sep and self.optional:
+                    # optional array with separator
+                    ifdefname = f'(if defined({name}) then "{name}" else [])'
+                    return f'${{true="{pr}", false="" defined({name})}}${{sep="{array_sep}" {ifdefname}}}'
+
                 options = []
                 if default:
-                    options.append(f'default="{default}"')
+                    val = default
+                    if isinstance(default, str):
+                        val = f'"{default}"'
+                    if isinstance(default, bool):
+
+                        val = "true" if default else "false"
+                    options.append(f'default={val}')
                 if array_sep:
                     options.append(f'sep="{array_sep}"')
                 if true or false:
@@ -124,7 +135,7 @@ class Task(WdlBase):
 
                 stroptions = "".join(o + " " for o in options)
 
-                if self.optional:
+                if self.optional and not default:
                     prewithquotes = f'"{bc}" + ' if bc.strip() else ''
                     return f'${{{stroptions}{prewithquotes}{name}}}'
                 else:
