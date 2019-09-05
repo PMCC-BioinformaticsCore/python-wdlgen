@@ -115,8 +115,8 @@ class Task(WdlBase):
 
                 if array_sep and self.optional:
                     # optional array with separator
-                    ifdefname = f'(if defined({name}) then "{name}" else [])'
-                    return f'${{true="{pr}", false="" defined({name})}}${{sep="{array_sep}" {ifdefname}}}'
+                    # ifdefname = f'(if defined({name}) then {name} else [])'
+                    return f'${{true="{pr}" false="" defined({name})}}${{sep="{array_sep}" {name}}}'
 
                 options = []
                 if default:
