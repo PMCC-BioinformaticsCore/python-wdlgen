@@ -110,13 +110,13 @@ class Task(WdlBase):
                     if self.optional:
                         # Ugly optional workaround: https://github.com/openwdl/wdl/issues/25#issuecomment-315424063
                         internal_pref = f'if defined({name}) then "{bc}" else ""'
-                        return f'${{{internal_pref}}}${{sep=" {bc}" {name}}}'
-                    return f'${{sep=" " prefix("{bc}", {name})}}'
+                        return f'~{{{internal_pref}}}~{{sep=" {bc}" {name}}}'
+                    return f'~{{sep=" " prefix("{bc}", {name})}}'
 
                 if array_sep and self.optional:
                     # optional array with separator
                     # ifdefname = f'(if defined({name}) then {name} else [])'
-                    return f'${{true="{bc}" false="" defined({name})}}${{sep="{array_sep}" {name}}}'
+                    return f'~{{true="{bc}" false="" defined({name})}}~{{sep="{array_sep}" {name}}}'
 
                 options = []
                 if default:
@@ -137,9 +137,9 @@ class Task(WdlBase):
 
                 if self.optional and not default:
                     prewithquotes = f'"{bc}" + ' if bc.strip() else ''
-                    return f'${{{stroptions}{prewithquotes}{name}}}'
+                    return f'~{{{stroptions}{prewithquotes}{name}}}'
                 else:
-                    return bc + f"${{{stroptions}{name}}}"
+                    return bc + f"~{{{stroptions}{name}}}"
 
         def __init__(self, command, inputs: Optional[List[CommandInput]]=None, arguments: Optional[List[CommandArgument]]=None):
             self.command = command
@@ -199,7 +199,7 @@ task {name} {{
                 com = "\n".join(c.get_string(indent=2) for c in self.command)
             else:
                 com = self.command.get_string(indent=2)
-            command_block = "{tb}command {{\n{args}\n{tb}}}".format(
+            command_block = "{tb}command <<<\n{args}\n{tb}>>>".format(
                 tb=tb,
                 args=com
             )
