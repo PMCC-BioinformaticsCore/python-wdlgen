@@ -101,16 +101,16 @@ class TestCommandGeneration(unittest.TestCase):
     def test_commandinput_space(self):
         t = Task.Command.CommandInput("taskGreeting", optional=False, position=None, prefix="-a",
                                       separate_value_from_prefix=True, default=None)
-        self.assertEqual("-a ${taskGreeting}", t.get_string())
+        self.assertEqual("-a ~{taskGreeting}", t.get_string())
 
     def test_commandinput_nospace(self):
         t = Task.Command.CommandInput("taskGreeting", optional=False, position=None, prefix="val=",
                                       separate_value_from_prefix=False, default=None)
-        self.assertEqual("val=${taskGreeting}", t.get_string())
+        self.assertEqual("val=~{taskGreeting}", t.get_string())
 
     def test_commandarg_space(self):
         t = Task.Command.CommandInput("argVal", position=None, prefix="-p", separate_value_from_prefix=True)
-        self.assertEqual("-p ${argVal}", t.get_string())
+        self.assertEqual("-p ~{argVal}", t.get_string())
 
     def test_commandarg_nospace(self):
         t = Task.Command.CommandArgument(prefix="arg=", value="argVal", position=None, separate_value_from_prefix=False)
