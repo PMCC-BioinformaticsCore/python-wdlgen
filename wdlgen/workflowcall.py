@@ -45,6 +45,17 @@ class WorkflowCall(WorkflowCallBase):
         )
 
 
+class WorkflowConditional(WorkflowCallBase):
+    def __init__(self, condition: str, calls: List[WorkflowCall]=None):
+        self.condition = condition
+        self.calls = calls or []
+
+    def get_string(self, indent=1):
+        body = "\n".join(c.get_string(indent=indent + 1) for c in self.calls)
+        return "{ind}if ({condition}) {{\n {body}\n{ind}}}"\
+            .format(ind=indent * '  ', condition=self.condition, body=body)
+
+
 class WorkflowScatter(WorkflowCallBase):
 
     def __init__(self, identifier: str, expression: str, calls: List[WorkflowCall]=None):
