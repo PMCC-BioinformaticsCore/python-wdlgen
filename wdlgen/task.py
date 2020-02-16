@@ -160,15 +160,22 @@ class Task(WdlBase):
                     options.append(f"default={val}")
                 if array_sep:
                     options.append(f'sep="{array_sep}"')
-                if true or false:
+                is_flag = true or false
+                if is_flag:
                     options.append(f'true="{true if true else ""}"')
                     options.append(f'false="{false if false else ""}"')
 
                 stroptions = "".join(o + " " for o in options)
 
-                if self.optional and not default:
+                if self.optional and not default and not is_flag:
                     prewithquotes = f'"{bc}" + ' if bc.strip() else ""
-                    return f"~{{{stroptions}{prewithquotes}{name}}}"
+                    # Option 1: We apply quotes are value, Option 2: We quote whole "prefix + name" combo
+                    full_token = (
+                        f"{prewithquotes} '\"' + {name} + '\"'"
+                        if (self.separate and self.prefix and prewithquotes)
+                        else f"'\"' + {prewithquotes}{name} + '\"'"
+                    )
+                    return f'~{{{stroptions}if defined({name}) then ({full_token}) else ""}}'
                 else:
                     return bc + f"~{{{stroptions}{name}}}"
 
