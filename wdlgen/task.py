@@ -167,8 +167,8 @@ class Task(WdlBase):
 
                 stroptions = "".join(o + " " for o in options)
 
-                if self.optional and not default and not is_flag:
-                    prewithquotes = f'"{bc}" + ' if bc.strip() else ""
+                prewithquotes = f'"{bc}" + ' if bc.strip() else ""
+                if self.optional and not default and not is_flag and prewithquotes:
                     # Option 1: We apply quotes are value, Option 2: We quote whole "prefix + name" combo
                     full_token = (
                         f"{prewithquotes} '\"' + {name} + '\"'"
