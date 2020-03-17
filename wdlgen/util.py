@@ -2,6 +2,21 @@ from abc import ABC, abstractmethod
 import json
 
 
+def convert_python_value_to_wdl_literal(val) -> str:
+    if val is None:
+        # there is no NULL value yet
+        return ""
+    if hasattr(val, "get_string"):
+        return val.get_string()
+
+    if isinstance(val, bool):
+        return "true" if val else "false"
+    if isinstance(val, str):
+        return f'"{val}"'
+
+    return str(val)
+
+
 class WdlBase(ABC):
     @abstractmethod
     def get_string(self):
@@ -32,11 +47,7 @@ class WrappedKvClass(KvClass):
     def get_string(self):
         l = []
         for k, v in self.kwargs.items():
-            val = v
-            if hasattr(v, "get_string"):
-                val = v.get_string()
-            if isinstance(val, str):
-                val = f'"{val}"'
+            val = convert_python_value_to_wdl_literal(v)
             l.append("{k}: {v}".format(k=k, v=val))
         return l
 

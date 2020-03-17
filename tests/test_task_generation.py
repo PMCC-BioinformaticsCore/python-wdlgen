@@ -256,6 +256,19 @@ task param_meta_scalar {
         derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
 
+    def test_parameter_meta_bool(self):
+        w = Task("param_meta_scalar", parameter_meta=ParameterMeta(pos=True, neg=False))
+
+        expected = """\
+task param_meta_scalar {
+  parameter_meta {
+    pos: true
+    neg: false
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
+
     def test_parameter_meta_string(self):
         w = Task(
             "param_meta_string", parameter_meta=ParameterMeta(other="string value")
@@ -298,6 +311,19 @@ class TestWorkflowMetaGeneration(unittest.TestCase):
 task meta_scalar {
   meta {
     arbitrary_scalar: 42
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
+
+    def test_meta_bool(self):
+        w = Task("meta_scalar", meta=Meta(pos=True, neg=False))
+
+        expected = """\
+task meta_scalar {
+  meta {
+    pos: true
+    neg: false
   }
 }"""
         derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
