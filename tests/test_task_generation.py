@@ -89,25 +89,46 @@ class TestTaskGeneration(unittest.TestCase):
 
 
 class TestCommandGeneration(unittest.TestCase):
-
     def test_simple_command(self):
         command = Task.Command("egrep")
         command.inputs.append(Task.Command.CommandInput("pattern"))
         command.inputs.append(Task.Command.CommandInput("in"))
 
-        print(command.get_string(2))
+        expected = """\
+egrep \\
+  ~{pattern} \\
+  ~{in}"""
+
+        self.assertEqual(expected, command.get_string(0))
 
     def test_readme_example(self):
         command = Task.Command("echo")
         command.inputs.append(
-            Task.Command.CommandInput("taskGreeting", optional=False, position=None, prefix="-a",
-                                      separate_value_from_prefix=True, default=None))
+            Task.Command.CommandInput(
+                "taskGreeting",
+                optional=False,
+                position=None,
+                prefix="-a",
+                separate_value_from_prefix=True,
+                default=None,
+            )
+        )
         command.inputs.append(
-            Task.Command.CommandInput("otherInput", optional=True, position=2, prefix="optional-param=",
-                                      separate_value_from_prefix=False, default=None))
-
+            Task.Command.CommandInput(
+                "otherInput",
+                optional=True,
+                position=2,
+                prefix="optional-param=",
+                separate_value_from_prefix=False,
+                default=None,
+            )
+        )
+        expected = """\
+echo \\
+  -a ~{taskGreeting} \\
+  ~{if defined(otherInput) then ('"' + "optional-param=" + otherInput + '"') else ""}"""
         # t is the task
-        print(command.get_string())
+        self.assertEqual(expected, command.get_string())
 
     def test_commandinput_space(self):
         t = Task.Command.CommandInput("taskGreeting", optional=False, position=None, prefix="-a",
