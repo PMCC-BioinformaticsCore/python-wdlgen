@@ -63,6 +63,24 @@ workflow param_meta_obj {
         derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
         self.assertEqual(expected, derived_workflow_only)
 
+    def test_parameter_meta_dict(self):
+        w = Workflow(
+            "param_meta_obj",
+            parameter_meta=ParameterMeta(
+                obj_value={
+                    "help": "This is help text", "scalar": 96
+                }
+            ),
+        )
+
+        expected = """\
+workflow param_meta_obj {
+  parameter_meta {
+    obj_value: {"help": "This is help text", "scalar": 96}
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        self.assertEqual(expected, derived_workflow_only)
 
 class TestWorkflowMetaGeneration(unittest.TestCase):
     def test_meta_scalar(self):

@@ -8,6 +8,8 @@ def convert_python_value_to_wdl_literal(val) -> str:
         return ""
     if hasattr(val, "get_string"):
         return val.get_string()
+    if isinstance(val, dict):
+        return json.dumps(val)
 
     if isinstance(val, bool):
         return "true" if val else "false"
