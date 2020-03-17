@@ -1,6 +1,17 @@
 import unittest
 
-from wdlgen import Input, Output, Workflow, Task, WdlType, String, WorkflowCall, WorkflowScatter
+from wdlgen import (
+    Input,
+    Output,
+    Workflow,
+    Task,
+    WdlType,
+    String,
+    WorkflowCall,
+    WorkflowScatter,
+    Meta,
+    ParameterMeta,
+)
 
 
 class TestTaskGeneration(unittest.TestCase):
@@ -148,3 +159,76 @@ class TestWorkflowScatter(unittest.TestCase):
         print(sc.get_string(indent=0))
         print(sc.get_string(indent=1))
         print(sc.get_string(indent=2))
+
+
+class TestWorkflowParameterMetaGeneration(unittest.TestCase):
+    def test_parameter_meta_scalar(self):
+        w = Task("param_meta_scalar", parameter_meta=ParameterMeta(test=42))
+
+        expected = """\
+task param_meta_scalar {
+  parameter_meta {
+    test: 42
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
+
+    def test_parameter_meta_string(self):
+        w = Task(
+            "param_meta_string", parameter_meta=ParameterMeta(other="string value")
+        )
+
+        expected = """\
+task param_meta_string {
+  parameter_meta {
+    other: "string value"
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
+
+    def test_parameter_meta_obj(self):
+        w = Task(
+            "param_meta_obj",
+            parameter_meta=ParameterMeta(
+                obj_value=ParameterMeta.ParamMetaAttribute(
+                    help="This is help text", scalar=96
+                )
+            ),
+        )
+
+        expected = """\
+task param_meta_obj {
+  parameter_meta {
+    obj_value: "{"scalar": 96, "help": "This is help text"}"
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
+
+
+class TestWorkflowMetaGeneration(unittest.TestCase):
+    def test_meta_scalar(self):
+        w = Task("meta_scalar", meta=Meta(arbitrary_scalar=42))
+
+        expected = """\
+task meta_scalar {
+  meta {
+    arbitrary_scalar: 42
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
+
+    def test_meta_string(self):
+        w = Task("meta_string", meta=Meta(author="illusional"))
+
+        expected = """\
+task meta_string {
+  meta {
+    author: "illusional"
+  }
+}"""
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
+        self.assertEqual(expected, derived_workflow_only)
