@@ -4,7 +4,6 @@ import wdlgen.types as types
 
 
 class TestTypes(unittest.TestCase):
-
     def test_parse_string(self):
         t = types.WdlType.parse_type("String")
         self.assertIsInstance(t, types.WdlType)
@@ -44,5 +43,3 @@ class TestTypes(unittest.TestCase):
         tt = t._type
         self.assertIsInstance(tt, types.ArrayType)
         self.assertTrue(tt._requires_multiple)
-
-
