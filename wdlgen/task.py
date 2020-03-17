@@ -241,14 +241,6 @@ task {name} {{
                 + f"\n{tb}}}"
             )
 
-        if self.outputs:
-            blocks.append(
-                "{tb}output {{\n{outs}\n{tb}}}".format(
-                    tb=tb,
-                    outs="\n".join((2 * tb) + o.get_string() for o in self.outputs),
-                )
-            )
-
         if self.command:
 
             if isinstance(self.command, list):
@@ -277,6 +269,14 @@ task {name} {{
                 "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
                     tb=tb,
                     args="\n".join((2 * tb) + a for a in self.param_meta.get_string()),
+                )
+            )
+
+        if self.outputs:
+            blocks.append(
+                "{tb}output {{\n{outs}\n{tb}}}".format(
+                    tb=tb,
+                    outs="\n".join((2 * tb) + o.get_string() for o in self.outputs),
                 )
             )
 

@@ -65,22 +65,6 @@ workflow {name} {{
                     ins.append(2 * tb + wd)
             blocks.append(f"{tb}input {{\n" + "\n".join(ins) + f"\n{tb}}}")
 
-        if self.outputs:
-            outs = []
-            # either str | Output | list[str | Output]
-            for o in self.outputs:
-                if isinstance(o, Output):
-                    wd = o.get_string()
-                    if isinstance(wd, list):
-                        outs.extend((2 * tb) + w for w in wd)
-                    else:
-                        outs.append((2 * tb) + wd)
-                else:
-                    outs.append(str(o))
-            blocks.append(
-                "{tb}output {{\n{outs}\n{tb}}}".format(tb=tb, outs="\n".join(outs))
-            )
-
         if self.calls:
             blocks.append("\n".join(c.get_string(indent=1) for c in self.calls))
 
@@ -100,6 +84,22 @@ workflow {name} {{
                     tb=tb,
                     args="\n".join((2 * tb) + a for a in self.param_meta.get_string()),
                 )
+            )
+
+        if self.outputs:
+            outs = []
+            # either str | Output | list[str | Output]
+            for o in self.outputs:
+                if isinstance(o, Output):
+                    wd = o.get_string()
+                    if isinstance(wd, list):
+                        outs.extend((2 * tb) + w for w in wd)
+                    else:
+                        outs.append((2 * tb) + wd)
+                else:
+                    outs.append(str(o))
+            blocks.append(
+                "{tb}output {{\n{outs}\n{tb}}}".format(tb=tb, outs="\n".join(outs))
             )
 
         return self.format.format(
