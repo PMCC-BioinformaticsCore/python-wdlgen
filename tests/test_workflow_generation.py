@@ -57,7 +57,7 @@ workflow param_meta_scalar {
         expected = """\
 workflow param_meta_obj {
   parameter_meta {
-    obj_value: {"scalar": 96, "help": "This is help text"}
+    obj_value: {help: "This is help text", scalar: 96}
   }
 }"""
         derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
@@ -76,7 +76,7 @@ workflow param_meta_obj {
         expected = """\
 workflow param_meta_obj {
   parameter_meta {
-    obj_value: {"help": "This is help text", "scalar": 96}
+    obj_value: {help: "This is help text", scalar: 96}
   }
 }"""
         derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
