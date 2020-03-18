@@ -45,7 +45,9 @@ Generally it supports:
 	- calls:
 		- general call (`wdlgen.WorkflowCall`)
 		- scatter (`wdlgen.WorkflowScatter(WorkflowCall[])`)
-
+    - meta: `wdlgen.Meta`
+    - parameter_meta: `wdlgen.ParameterMeta`
+    
 - Task creation (`wdlgen.Task`) - This is based similar to how [CWL constructs its commands](https://www.commonwl.org/v1.0/CommandLineTool.html#CommandLineTool).
 	- inputs: `wdlgen.Input`
 	- outputs: `wdlgen.Output`
@@ -53,6 +55,8 @@ Generally it supports:
 	- command: `wdlgen.Task.Command`
 		- arguments: `wdlgen.Task.Command.Argument`
 		- inputs: `wdlgen.Task.Command.Input`
+    - meta: `wdlgen.Meta`
+    - parameter_meta: `wdlgen.ParameterMeta`
 
 ## How to use
 
@@ -154,7 +158,12 @@ The structure of a workflow is m
 w = wdlgen.Workflow("workflow_name")
 
 w.imports.append(wdlgen.Workflow.WorkflowImport("tool_file", ""))
-w.inputs.append(wdlgen.WdlType.parse("String"), wdlgen.Input("inputGreeting"))
+w.inputs.append(
+    wdlgen.Input(
+        wdlgen.WdlType.parse("String"), 
+        "inputGreeting"
+    )
+)
 
 
 inputs_map = {"taskGreeting": "inputGreeting"}

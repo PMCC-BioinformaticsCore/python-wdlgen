@@ -12,8 +12,12 @@ class WorkflowCallBase(WdlBase, ABC):
 
 
 class WorkflowCall(WorkflowCallBase):
-
-    def __init__(self, namespaced_identifier: str=None, alias: str=None, inputs_map: Dict[str, str]=None):
+    def __init__(
+        self,
+        namespaced_identifier: str = None,
+        alias: str = None,
+        inputs_map: Dict[str, str] = None,
+    ):
         """
 
         :param task:
@@ -33,41 +37,50 @@ class WorkflowCall(WorkflowCallBase):
 
         body = ""
         if self.inputs_map:
-            inpmap = ",\n".join(((indent + 2) * tb + str(k) + "=" + str(v)) for k, v in self.inputs_map.items())
+            inpmap = ",\n".join(
+                ((indent + 2) * tb + str(k) + "=" + str(v))
+                for k, v in self.inputs_map.items()
+            )
             body = self.body_format.format(ind=indent * tb, input_map=inpmap, tb=tb)
 
         return self.call_format.format(
             ind=indent * tb,
             tb=tb,
-            name=self.namespaced_identifier if self.namespaced_identifier else self.task.name,
+            name=self.namespaced_identifier
+            if self.namespaced_identifier
+            else self.task.name,
             alias=(" as " + self.alias) if self.alias else "",
-            body=body
+            body=body,
         )
 
 
 class WorkflowConditional(WorkflowCallBase):
-    def __init__(self, condition: str, calls: List[WorkflowCall]=None):
+    def __init__(self, condition: str, calls: List[WorkflowCall] = None):
         self.condition = condition
         self.calls = calls or []
 
     def get_string(self, indent=1):
         body = "\n".join(c.get_string(indent=indent + 1) for c in self.calls)
-        return "{ind}if ({condition}) {{\n {body}\n{ind}}}"\
-            .format(ind=indent * '  ', condition=self.condition, body=body)
+        return "{ind}if ({condition}) {{\n {body}\n{ind}}}".format(
+            ind=indent * "  ", condition=self.condition, body=body
+        )
 
 
 class WorkflowScatter(WorkflowCallBase):
-
-    def __init__(self, identifier: str, expression: str, calls: List[WorkflowCall]=None):
+    def __init__(
+        self, identifier: str, expression: str, calls: List[WorkflowCall] = None
+    ):
         self.identifier: str = identifier
         self.expression: str = expression
         self.calls: List[WorkflowCall] = calls if calls else []
 
     def get_string(self, indent=1):
-        scatter_iteration_statement = "{identifier} in {expression}"\
-            .format(identifier=self.identifier, expression=self.expression)
+        scatter_iteration_statement = "{identifier} in {expression}".format(
+            identifier=self.identifier, expression=self.expression
+        )
 
         body = "\n".join(c.get_string(indent=indent + 1) for c in self.calls)
 
-        return "{ind}scatter ({st}) {{\n {body}\n{ind}}}"\
-            .format(ind=indent * '  ', st=scatter_iteration_statement, body=body)
+        return "{ind}scatter ({st}) {{\n {body}\n{ind}}}".format(
+            ind=indent * "  ", st=scatter_iteration_statement, body=body
+        )
