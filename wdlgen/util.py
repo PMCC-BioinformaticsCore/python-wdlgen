@@ -29,14 +29,19 @@ class KvClass(WdlBase):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def get_string(self):
+    def get_string(self, indent=0):
         l = []
-        for k, v in self.kwargs.items():
-            val = v
-            if hasattr(v, "get_string"):
-                val = v.get_string()
-            l.append("{k}: {v}".format(k=k, v=val))
-        return l
+        sorted_keys = sorted(self.kwargs.keys())
+        for k in sorted_keys:
+            val = self.kwargs[k]
+            if val is None:
+                continue
+
+            if hasattr(val, "get_string"):
+                val = val.get_string()
+
+            l.append(indent * "  " + "{k}: {v}".format(k=k, v=val))
+        return "\n".join(l)
 
     def __setitem__(self, key, value):
         self.kwargs[key] = value
@@ -46,12 +51,12 @@ class KvClass(WdlBase):
 
 
 class WrappedKvClass(KvClass):
-    def get_string(self):
+    def get_string(self, indent=0):
         l = []
         for k, v in self.kwargs.items():
             val = convert_python_value_to_wdl_literal(v)
-            l.append("{k}: {v}".format(k=k, v=val))
-        return l
+            l.append("  " * indent + "{k}: {v}".format(k=k, v=val))
+        return "\n".join(l)
 
 
 class Meta(WrappedKvClass):
