@@ -250,27 +250,32 @@ task {name} {{
             blocks.append("{tb}command <<<\n{args}\n{tb}>>>".format(tb=tb, args=com))
 
         if self.runtime:
+            rt = self.runtime.get_string(indent=2)
             blocks.append(
                 "{tb}runtime {{\n{args}\n{tb}}}".format(
                     tb=tb,
-                    args="\n".join((2 * tb) + a for a in self.runtime.get_string()),
+                    args=rt,
                 )
             )
 
         if self.meta:
-            blocks.append(
-                "{tb}meta {{\n{args}\n{tb}}}".format(
-                    tb=tb, args="\n".join((2 * tb) + a for a in self.meta.get_string())
+            mt = self.meta.get_string(indent=2)
+            if mt:
+                blocks.append(
+                    "{tb}meta {{\n{args}\n{tb}}}".format(
+                        tb=tb, args=mt
+                    )
                 )
-            )
 
         if self.param_meta:
-            blocks.append(
-                "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
-                    tb=tb,
-                    args="\n".join((2 * tb) + a for a in self.param_meta.get_string()),
+            pmt = self.param_meta.get_string(indent=2)
+            if pmt:
+                blocks.append(
+                    "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
+                        tb=tb,
+                        args=pmt
+                    )
                 )
-            )
 
         if self.outputs:
             blocks.append(
