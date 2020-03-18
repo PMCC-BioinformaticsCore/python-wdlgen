@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from .common import Input, Output
-from .util import WdlBase
+from .util import WdlBase, KvClass, Meta, ParameterMeta
 
 
 class Task(WdlBase):
@@ -24,19 +24,7 @@ class Task(WdlBase):
     Documentation: https://github.com/openwdl/get_string/blob/master/versions/draft-2/SPEC.md#task-definition
     """
 
-    class Runtime(WdlBase):
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-
-        def get_string(self):
-            l = []
-            for k, v in self.kwargs.items():
-                val = v
-                if hasattr(v, "get_string"):
-                    val = v.get_string()
-                l.append("{k}: {v}".format(k=k, v=val))
-            return l
-
+    class Runtime(KvClass):
         def add_docker(self, docker):
             self.kwargs["docker"] = f'"{docker}"'
 
@@ -219,6 +207,8 @@ class Task(WdlBase):
         command: Command = None,
         runtime: Runtime = None,
         version="draft-2",
+        meta: Meta = None,
+        parameter_meta: ParameterMeta = None,
     ):
         self.name = name
         self.inputs = inputs if inputs else []
@@ -227,14 +217,14 @@ class Task(WdlBase):
         self.runtime = runtime
         self.version = version
 
+        self.meta = meta
+        self.param_meta = parameter_meta
+
         self.format = """
 version {version}
 
 task {name} {{
-{inputs_block}
-{command_block}
-{runtime_block}
-{output_block}
+{blocks}
 }}
         """.strip()
 
@@ -242,18 +232,13 @@ task {name} {{
         tb = "  "
 
         name = self.name
-        inputs_block, command_block, runtime_block, output_block = "", "", "", ""
+        blocks = []
 
         if self.inputs:
-            inputs_block = (
+            blocks.append(
                 f"{tb}input {{\n"
                 + "\n".join(2 * tb + i.get_string() for i in self.inputs)
                 + f"\n{tb}}}"
-            )
-
-        if self.outputs:
-            output_block = "{tb}output {{\n{outs}\n{tb}}}".format(
-                tb=tb, outs="\n".join((2 * tb) + o.get_string() for o in self.outputs)
             )
 
         if self.command:
@@ -262,18 +247,44 @@ task {name} {{
                 com = "\n".join(c.get_string(indent=2) for c in self.command)
             else:
                 com = self.command.get_string(indent=2)
-            command_block = "{tb}command <<<\n{args}\n{tb}>>>".format(tb=tb, args=com)
+            blocks.append("{tb}command <<<\n{args}\n{tb}>>>".format(tb=tb, args=com))
 
         if self.runtime:
-            runtime_block = "{tb}runtime {{\n{args}\n{tb}}}".format(
-                tb=tb, args="\n".join((2 * tb) + a for a in self.runtime.get_string())
+            rt = self.runtime.get_string(indent=2)
+            blocks.append(
+                "{tb}runtime {{\n{args}\n{tb}}}".format(
+                    tb=tb,
+                    args=rt,
+                )
+            )
+
+        if self.meta:
+            mt = self.meta.get_string(indent=2)
+            if mt:
+                blocks.append(
+                    "{tb}meta {{\n{args}\n{tb}}}".format(
+                        tb=tb, args=mt
+                    )
+                )
+
+        if self.param_meta:
+            pmt = self.param_meta.get_string(indent=2)
+            if pmt:
+                blocks.append(
+                    "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
+                        tb=tb,
+                        args=pmt
+                    )
+                )
+
+        if self.outputs:
+            blocks.append(
+                "{tb}output {{\n{outs}\n{tb}}}".format(
+                    tb=tb,
+                    outs="\n".join((2 * tb) + o.get_string() for o in self.outputs),
+                )
             )
 
         return self.format.format(
-            name=name,
-            inputs_block=inputs_block,
-            command_block=command_block,
-            runtime_block=runtime_block,
-            output_block=output_block,
-            version=self.version,
+            name=name, blocks="\n".join(blocks), version=self.version
         )

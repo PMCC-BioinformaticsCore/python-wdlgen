@@ -14,7 +14,7 @@ class PrimitiveType:
     kString = "String"
     kFile = "File"
 
-    kDirectory = "Directory"    # development branch
+    kDirectory = "Directory"  # development branch
 
     DEF_TYPE = kString
 
@@ -22,8 +22,11 @@ class PrimitiveType:
 
     def __init__(self, prim_type):
         if prim_type not in self.types:
-            raise Exception("'{t}' was not a primitive type, expected one of {types}"
-                            .format(t=prim_type, types=", ".join(self.types)))
+            raise Exception(
+                "'{t}' was not a primitive type, expected one of {types}".format(
+                    t=prim_type, types=", ".join(self.types)
+                )
+            )
         self._type = prim_type
 
     def get_string(self):
@@ -50,18 +53,26 @@ class ArrayType:
         f = ArrayType.kArray + "[{t}]{quantifier}"
 
         if isinstance(self._subtype, list):
-            return [f.format(t=t.get_string(), quantifier=("+" if self._requires_multiple else "")) for t in self._subtype]
+            return [
+                f.format(
+                    t=t.get_string(),
+                    quantifier=("+" if self._requires_multiple else ""),
+                )
+                for t in self._subtype
+            ]
 
         wd = self._subtype.get_string()
         if isinstance(wd, list) and len(wd) > 1:
-            raise Exception("Internal error: unable to support array type with multiple subvalues")
+            raise Exception(
+                "Internal error: unable to support array type with multiple subvalues"
+            )
         return f.format(
             t=wd[0] if isinstance(wd, list) else wd,
-            quantifier=("+" if self._requires_multiple else "")
+            quantifier=("+" if self._requires_multiple else ""),
         )
 
     @staticmethod
-    def parse(t: str, requires_multiple: Optional[bool]=None):
+    def parse(t: str, requires_multiple: Optional[bool] = None):
 
         requires_multiple = (requires_multiple is True) or False
         if t.endswith("+"):
@@ -73,6 +84,7 @@ class ArrayType:
 
         return ArrayType(t[6:-1], requires_multiple)
 
+
 # class CompoundTypes(ArrayType, PrimitiveType):
 
 
@@ -80,17 +92,21 @@ class WdlType:
 
     postfix_quantifiers = [
         # Documentation: https://github.com/openwdl/wdl/blob/master/versions/draft-2/SPEC.md#optional-parameters--type-constraints
-        "?",    # means that the value is optional. if the value is missing, it will evaluate to the empty string.
-        "+"     # can only be applied to Array types, the array is required to have one or more values in it
+        "?",  # means that the value is optional. if the value is missing, it will evaluate to the empty string.
+        "+",  # can only be applied to Array types, the array is required to have one or more values in it
     ]
 
     types = [*PrimitiveType.types, ArrayType.kArray]
 
     def __init__(self, type_obj, optional=False):
-        if not (isinstance(type_obj, PrimitiveType)
-                or isinstance(type_obj, ArrayType)
-                or isinstance(type_obj, WdlType)):
-            raise Exception("Must initialise WdlType with PrimitiveType, ArrayType or WdlType")
+        if not (
+            isinstance(type_obj, PrimitiveType)
+            or isinstance(type_obj, ArrayType)
+            or isinstance(type_obj, WdlType)
+        ):
+            raise Exception(
+                "Must initialise WdlType with PrimitiveType, ArrayType or WdlType"
+            )
 
         self._type = type_obj
         self.optional = optional
@@ -129,7 +145,12 @@ class WdlType:
 
             parse_attempt1 = PrimitiveType.parse(t)
             if parse_attempt1:
-                if multi_quantifier: _LOGGER.warning("Ignoring extraneous multi_quantifier (+) on '{tp}'".format(tp=t_orig))
+                if multi_quantifier:
+                    _LOGGER.warning(
+                        "Ignoring extraneous multi_quantifier (+) on '{tp}'".format(
+                            tp=t_orig
+                        )
+                    )
                 return WdlType(parse_attempt1, optional=optional_quantifier)
 
             parse_attempt2 = ArrayType.parse(t, multi_quantifier)
