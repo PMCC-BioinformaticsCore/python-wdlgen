@@ -21,7 +21,9 @@ setup(
     author_email="michael.franklin@petermac.org",
     license="GNU",
     packages=["wdlgen"],
-    install_requires=[],
+    install_requires=[
+        'miniwdl'
+    ],
     zip_safe=False,
     long_description=long_description,
     long_description_content_type="text/markdown",

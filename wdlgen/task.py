@@ -117,8 +117,8 @@ class Task(WdlBase):
                     self.false,
                 )
 
-                pr = self.prefix if self.prefix else ""
-                bc = pr + (" " if self.separate and self.prefix else "")
+                prefix = self.prefix if self.prefix else ""
+                bc = prefix + (" " if self.separate and self.prefix else "")
 
                 if self.separate_arrays:
                     if array_sep or default or true or false:
@@ -154,16 +154,12 @@ class Task(WdlBase):
                     options.append(f'false="{false if false else ""}"')
 
                 stroptions = "".join(o + " " for o in options)
-
-                prewithquotes = f'"{bc}" + ' if bc.strip() else ""
-                if self.optional and not default and not is_flag and prewithquotes:
+                if self.optional and not default and not is_flag and bc.strip():
                     # Option 1: We apply quotes are value, Option 2: We quote whole "prefix + name" combo
-                    full_token = (
-                        f"{prewithquotes} '\"' + {name} + '\"'"
-                        if (self.separate and self.prefix and prewithquotes)
-                        else f"'\"' + {prewithquotes}{name} + '\"'"
-                    )
-                    return f'~{{{stroptions}if defined({name}) then ({full_token}) else ""}}'
+                    if self.separate and self.prefix:
+                        return f'~{{\'"{prefix}" "\' + {name} + \'"\'}}'
+                    else:
+                        return f'~{{\'"{prefix}\' + {name} + \'"\'}}'
                 else:
                     return bc + f"~{{{stroptions}{name}}}"
 
