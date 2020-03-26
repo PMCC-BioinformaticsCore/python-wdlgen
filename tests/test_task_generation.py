@@ -13,6 +13,11 @@ from wdlgen import (
     ParameterMeta,
 )
 
+import WDL
+from WDL._parser import _ExprTransformer, parse, _grammar
+
+def parse_miniwdl_token(token, text, version=None):
+    return _ExprTransformer().transform(parse(_grammar.get(version)[0], text, token))
 
 class TestTaskGeneration(unittest.TestCase):
     def test_simple_task(self):
@@ -60,27 +65,6 @@ class TestTaskGeneration(unittest.TestCase):
         # command in next section
         t.outputs.append(Output(WdlType.parse_type("File"), "standardOut", "stdout()"))
 
-        command = Task.Command("echo")
-        command.inputs.append(
-            Task.Command.CommandInput(
-                "taskGreeting",
-                optional=False,
-                position=None,
-                prefix="-a",
-                separate_value_from_prefix=True,
-                default=None,
-            )
-        )
-        command.inputs.append(
-            Task.Command.CommandInput(
-                "otherInput",
-                optional=True,
-                position=2,
-                prefix="optional-param=",
-                separate_value_from_prefix=False,
-                default=None,
-            )
-        )
         command = Task.Command("echo")
         command.inputs.append(
             Task.Command.CommandInput(
@@ -164,12 +148,16 @@ egrep \\
                 default=None,
             )
         )
-        expected = """\
+        output = command.get_string()
+        expected = '''\
 echo \\
   -a ~{taskGreeting} \\
-  ~{if defined(otherInput) then ('"' + "optional-param=" + otherInput + '"') else ""}"""
+  ~{'"optional-param=' + otherInput + '"'}'''
         # t is the task
-        self.assertEqual(expected, command.get_string())
+        self.assertEqual(expected, output)
+
+        # Check that it's also valid WDL
+        parse_miniwdl_token('command2', 'command <<<\n' + output + '\n>>>')
 
     def test_commandinput_space(self):
         t = Task.Command.CommandInput(
