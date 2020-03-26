@@ -16,7 +16,16 @@ from wdlgen import (
 import WDL
 from WDL._parser import _ExprTransformer, parse, _grammar
 
-def parse_miniwdl_token(token, text, version=None):
+
+def parse_miniwdl_token(token: str, text: str, version: bool = None):
+    """
+    Uses miniWDL to parse some fragment of WDL
+
+    :param token: The name of the WDL token to parse. Refer to
+        https://github.com/chanzuckerberg/miniwdl/blob/master/WDL/_grammar.py for a complete list
+    :param text: The text to parse as WDL
+    :param version: "1.0" (default) or "draft-2"
+    """
     return _ExprTransformer().transform(parse(_grammar.get(version)[0], text, token))
 
 class TestTaskGeneration(unittest.TestCase):
