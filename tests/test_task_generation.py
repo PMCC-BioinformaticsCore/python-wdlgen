@@ -62,7 +62,7 @@ class TestTaskGeneration(unittest.TestCase):
 
         command = Task.Command("echo")
         command.inputs.append(
-            Task.Command.CommandInput(
+            Task.Command.CommandInput.from_fields(
                 "taskGreeting",
                 optional=False,
                 position=None,
@@ -72,7 +72,7 @@ class TestTaskGeneration(unittest.TestCase):
             )
         )
         command.inputs.append(
-            Task.Command.CommandInput(
+            Task.Command.CommandInput.from_fields(
                 "otherInput",
                 optional=True,
                 position=2,
@@ -83,7 +83,7 @@ class TestTaskGeneration(unittest.TestCase):
         )
         command = Task.Command("echo")
         command.inputs.append(
-            Task.Command.CommandInput(
+            Task.Command.CommandInput.from_fields(
                 "taskGreeting",
                 optional=False,
                 position=None,
@@ -93,7 +93,7 @@ class TestTaskGeneration(unittest.TestCase):
             )
         )
         command.inputs.append(
-            Task.Command.CommandInput(
+            Task.Command.CommandInput.from_fields(
                 "otherInput",
                 optional=True,
                 position=2,
@@ -132,8 +132,8 @@ class TestTaskGeneration(unittest.TestCase):
 class TestCommandGeneration(unittest.TestCase):
     def test_simple_command(self):
         command = Task.Command("egrep")
-        command.inputs.append(Task.Command.CommandInput("pattern"))
-        command.inputs.append(Task.Command.CommandInput("in"))
+        command.inputs.append(Task.Command.CommandInput("~{pattern}"))
+        command.inputs.append(Task.Command.CommandInput("~{in}"))
 
         expected = """\
 egrep \\
@@ -145,7 +145,7 @@ egrep \\
     def test_readme_example(self):
         command = Task.Command("echo")
         command.inputs.append(
-            Task.Command.CommandInput(
+            Task.Command.CommandInput.from_fields(
                 "taskGreeting",
                 optional=False,
                 position=None,
@@ -155,7 +155,7 @@ egrep \\
             )
         )
         command.inputs.append(
-            Task.Command.CommandInput(
+            Task.Command.CommandInput.from_fields(
                 "otherInput",
                 optional=True,
                 position=2,
@@ -172,7 +172,7 @@ echo \\
         self.assertEqual(expected, command.get_string())
 
     def test_commandinput_space(self):
-        t = Task.Command.CommandInput(
+        t = Task.Command.CommandInput.from_fields(
             "taskGreeting",
             optional=False,
             position=None,
@@ -183,7 +183,7 @@ echo \\
         self.assertEqual("-a ~{taskGreeting}", t.get_string())
 
     def test_commandinput_nospace(self):
-        t = Task.Command.CommandInput(
+        t = Task.Command.CommandInput.from_fields(
             "taskGreeting",
             optional=False,
             position=None,
@@ -194,13 +194,13 @@ echo \\
         self.assertEqual("val=~{taskGreeting}", t.get_string())
 
     def test_commandarg_space(self):
-        t = Task.Command.CommandInput(
+        t = Task.Command.CommandInput.from_fields(
             "argVal", position=None, prefix="-p", separate_value_from_prefix=True
         )
         self.assertEqual("-p ~{argVal}", t.get_string())
 
     def test_commandarg_nospace(self):
-        t = Task.Command.CommandArgument(
+        t = Task.Command.CommandArgument.from_fields(
             prefix="arg=",
             value="argVal",
             position=None,

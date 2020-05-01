@@ -58,26 +58,41 @@ class Task(WdlBase):
         class CommandArgument(WdlBase):
             def __init__(
                 self,
-                prefix: str = None,
-                value: str = None,
-                position: int = None,
-                separate_value_from_prefix: bool = True,
+                value,
+                    position=None
             ):
-                self.prefix: Optional[str] = prefix
-                self.position: Optional[int] = position
                 self.value = value
-                self.separate = separate_value_from_prefix
+                self.position = position
+
+            @staticmethod
+            def from_fields(prefix: str = None, value: str = None, position: int = None, separate_value_from_prefix: bool = True,):
+                pre = prefix if prefix else ""
+                sp = " " if separate_value_from_prefix else ""
+                val = value if value else ""
+                return Task.Command.CommandArgument((pre + sp + val).strip(), position=position)
 
             def get_string(self):
-                pre = self.prefix if self.prefix else ""
-                sp = " " if self.separate else ""
-                val = self.value if self.value else ""
-                return (pre + sp + val).strip()
+                return self.value
 
         class CommandInput(CommandArgument):
             def __init__(
                 self,
-                name: str,
+                value,
+                position=None,
+            ):
+                super().__init__(
+                   value=value,
+                    position=position,
+                )
+
+            @staticmethod
+            def from_input(inp: Input, prefix: str = None, position: int = None):
+                return Task.Command.CommandInput.from_fields(
+                    inp.name, inp.type.optional, prefix, position
+                )
+
+            @staticmethod
+            def from_fields(name: str,
                 optional: bool = False,
                 prefix: str = None,
                 position: int = None,
@@ -86,56 +101,35 @@ class Task(WdlBase):
                 separator=None,
                 true=None,
                 false=None,
-                separate_arrays=None,
-            ):
-                super().__init__(
-                    prefix=prefix,
-                    value=None,
-                    position=position,
-                    separate_value_from_prefix=separate_value_from_prefix,
-                )
-                self.name = name
-                self.optional = optional
-                self.default = default
-                self.separator = separator
-                self.true = true
-                self.false = false
-                self.separate_arrays = separate_arrays
+                separate_arrays=None):
 
-            @staticmethod
-            def from_input(inp: Input, prefix: str = None, position: int = None):
-                return Task.Command.CommandInput(
-                    inp.name, inp.type.optional, prefix, position
-                )
-
-            def get_string(self):
                 name, array_sep, default, true, false = (
-                    self.name,
-                    self.separator,
-                    self.default,
-                    self.true,
-                    self.false,
+                    name,
+                    separator,
+                    default,
+                    true,
+                    false,
                 )
 
-                pr = self.prefix if self.prefix else ""
-                bc = pr + (" " if self.separate and self.prefix else "")
+                pr = prefix if prefix else ""
+                bc = pr + (" " if separate_value_from_prefix and prefix else "")
 
-                if self.separate_arrays:
-                    if array_sep or default or true or false:
+                if separate_arrays:
+                    if separate_arrays or default or true or false:
                         print(
                             "separate_array take preferences over: separator, default, true, false"
                         )
-                    if self.optional:
+                    if optional:
                         # Ugly optional workaround: https://github.com/openwdl/wdl/issues/25#issuecomment-315424063
                         # Additional workaround for 'length(select_first({name}, [])' as length requires a non-optional array
                         internal_pref = f'if defined({name}) && length(select_first([{name}, []])) > 0 then "{bc}" else ""'
-                        return f'~{{{internal_pref}}}~{{sep=" {bc}" {name}}}'
-                    return f'~{{sep=" " prefix("{bc}", {name})}}'
+                        return Task.Command.CommandInput(f'~{{{internal_pref}}}~{{sep=" {bc}" {name}}}', position=position)
+                    return Task.Command.CommandInput(f'~{{sep=" " prefix("{bc}", {name})}}', position=position)
 
-                if array_sep and self.optional:
+                if array_sep and optional:
                     # optional array with separator
                     # ifdefname = f'(if defined({name}) then {name} else [])'
-                    return f'~{{true="{bc}" false="" defined({name})}}~{{sep="{array_sep}" {name}}}'
+                    return Task.Command.CommandInput(f'~{{true="{bc}" false="" defined({name})}}~{{sep="{array_sep}" {name}}}', position=position)
 
                 options = []
                 if default:
@@ -156,16 +150,16 @@ class Task(WdlBase):
                 stroptions = "".join(o + " " for o in options)
 
                 prewithquotes = f'"{bc}" + ' if bc.strip() else ""
-                if self.optional and not default and not is_flag and prewithquotes:
+                if optional and not default and not is_flag and prewithquotes:
                     # Option 1: We apply quotes are value, Option 2: We quote whole "prefix + name" combo
                     full_token = (
                         f"{prewithquotes} '\"' + {name} + '\"'"
-                        if (self.separate and self.prefix and prewithquotes)
+                        if (separate_value_from_prefix and prefix and prewithquotes)
                         else f"'\"' + {prewithquotes}{name} + '\"'"
                     )
-                    return f'~{{{stroptions}if defined({name}) then ({full_token}) else ""}}'
+                    return Task.Command.CommandInput(f'~{{{stroptions}if defined({name}) then ({full_token}) else ""}}', position=position)
                 else:
-                    return bc + f"~{{{stroptions}{name}}}"
+                    return Task.Command.CommandInput(bc + f"~{{{stroptions}{name}}}", position=position)
 
         def __init__(
             self,
