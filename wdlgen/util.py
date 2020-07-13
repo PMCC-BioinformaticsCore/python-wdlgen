@@ -14,7 +14,12 @@ def convert_python_value_to_wdl_literal(val) -> str:
     if isinstance(val, bool):
         return "true" if val else "false"
     if isinstance(val, str):
-        return f'"{val}"'
+        # sanitise string here
+        sanitised = val\
+            .replace("\\", "\\\\")\
+            .replace("\n", "\\n")\
+            .replace('"', '\\"')
+        return f'"{sanitised}"'
 
     return str(val)
 
