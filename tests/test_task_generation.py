@@ -228,7 +228,7 @@ echo \\
             separator=" ",
             default=[]
         )
-        self.assertEqual("~{sep(" ", if defined(my_array) then my_array else [])}", t.get_string())
+        self.assertEqual("~{sep(\" \", if defined(my_array) then my_array else [])}", t.get_string())
 
 
 class TestWorkflowGeneration(unittest.TestCase):
