@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = "v0.2.10"
+__version__ = "v0.3.0"
 
 DESCRIPTION = (
     "Contains classes and helpers to generate WDL without worrying about the syntax. "
