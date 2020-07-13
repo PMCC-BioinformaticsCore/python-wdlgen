@@ -208,6 +208,28 @@ echo \\
         )
         self.assertEqual("arg=argVal", t.get_string())
 
+    def test_commandarg_flag(self):
+        t = Task.Command.CommandInput.from_fields(
+            name="my_value",
+            true="--arg"
+        )
+        self.assertEqual("~{if (my_value) then \"--arg\" else \"\"}", t.get_string())
+
+    def test_commandarg_flag_false(self):
+        t = Task.Command.CommandInput.from_fields(
+            name="my_value",
+            false="--arg"
+        )
+        self.assertEqual("~{if (my_value) then \"\" else \"--arg\"}", t.get_string())
+
+    def test_commandinp_array_inp(self):
+        t = Task.Command.CommandInput.from_fields(
+            name="my_array",
+            separator=" ",
+            default=[]
+        )
+        self.assertEqual("~{sep(" ", if defined(my_array) then my_array else [])}", t.get_string())
+
 
 class TestWorkflowGeneration(unittest.TestCase):
     def test_hello_workflow(self):

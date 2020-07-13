@@ -123,43 +123,43 @@ class Task(WdlBase):
                         # Ugly optional workaround: https://github.com/openwdl/wdl/issues/25#issuecomment-315424063
                         # Additional workaround for 'length(select_first({name}, [])' as length requires a non-optional array
                         internal_pref = f'if defined({name}) && length(select_first([{name}, []])) > 0 then "{bc}" else ""'
-                        return Task.Command.CommandInput(f'~{{{internal_pref}}}~{{sep=" {bc}" {name}}}', position=position)
-                    return Task.Command.CommandInput(f'~{{sep=" " prefix("{bc}", {name})}}', position=position)
+                        return Task.Command.CommandInput(f'~{{{internal_pref}}}~{{sep(" {bc}", {name})}}', position=position)
+                    return Task.Command.CommandInput(f'~{{sep(" ", prefix("{bc}", {name}))}}', position=position)
 
-                if array_sep and optional:
+                elif array_sep and optional:
                     # optional array with separator
                     # ifdefname = f'(if defined({name}) then {name} else [])'
-                    return Task.Command.CommandInput(f'~{{true="{bc}" false="" defined({name})}}~{{sep="{array_sep}" {name}}}', position=position)
+                    return Task.Command.CommandInput(f'~{{true="{bc}" false="" defined({name})}}~{{sep("{array_sep}", {name})}}', position=position)
 
-                options = []
-                if default:
+                # build up new value from previous options
+                value = name
+
+                if default is not None:
                     val = default
                     if isinstance(default, str):
                         val = f'"{default}"'
                     if isinstance(default, bool):
-
                         val = "true" if default else "false"
-                    options.append(f"default={val}")
+
+                    value = f"if defined({value}) then {value} else {val}"
+
                 if array_sep:
-                    options.append(f'sep="{array_sep}"')
+                    value = f'sep("{array_sep}", {value})'
                 is_flag = true or false
                 if is_flag:
-                    options.append(f'true="{true if true else ""}"')
-                    options.append(f'false="{false if false else ""}"')
-
-                stroptions = "".join(o + " " for o in options)
+                    value = f'if ({value}) then "{true if true else ""}" else "{false if false else ""}"'
 
                 prewithquotes = f'"{bc}" + ' if bc.strip() else ""
                 if optional and not default and not is_flag and prewithquotes:
                     # Option 1: We apply quotes are value, Option 2: We quote whole "prefix + name" combo
                     full_token = (
-                        f"{prewithquotes} '\"' + {name} + '\"'"
+                        f"{prewithquotes} '\"' + {value} + '\"'"
                         if (separate_value_from_prefix and prefix and prewithquotes)
-                        else f"'\"' + {prewithquotes}{name} + '\"'"
+                        else f"'\"' + {prewithquotes}{value} + '\"'"
                     )
-                    return Task.Command.CommandInput(f'~{{{stroptions}if defined({name}) then ({full_token}) else ""}}', position=position)
+                    return Task.Command.CommandInput(f'~{{if defined({value}) then ({full_token}) else ""}}', position=position)
                 else:
-                    return Task.Command.CommandInput(bc + f"~{{{stroptions}{name}}}", position=position)
+                    return Task.Command.CommandInput(bc + f"~{{{value}}}", position=position)
 
         def __init__(
             self,
