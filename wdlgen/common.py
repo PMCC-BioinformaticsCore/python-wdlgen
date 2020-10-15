@@ -31,16 +31,17 @@ class Input(WdlBase):
 
         self.format = "{type} {name}{def_w_equals}"
 
-    def get_string(self):
+    def get_string(self, indent=0):
         if self.type is None:
             raise Exception(
                 f"Could not convert wdlgen.Input ('{self.name}') to string because type was null"
             )
 
+        tb = indent * "  "
         wd = self.type.get_string()
         if isinstance(wd, list):
-            return self.get_string_from_type(wd[0])
-        return self.get_string_from_type(wd)
+            return tb + self.get_string_from_type(wd[0])
+        return tb + self.get_string_from_type(wd)
 
     def get_string_from_type(self, wdtype):
         expression = self.expression
