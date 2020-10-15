@@ -74,8 +74,9 @@ class Task(WdlBase):
                     (pre + sp + val).strip(), position=position
                 )
 
-            def get_string(self):
-                return self.value
+            def get_string(self, indent=0):
+                tb = indent * "  "
+                return tb + str(self.value)
 
         class CommandInput(CommandArgument):
             def __init__(

@@ -10,8 +10,9 @@ class IfThenElse(WdlBase):
         self.value_if_true = value_if_true
         self.value_if_false = value_if_false
 
-    def get_string(self):
-        return (
+    def get_string(self, indent=0):
+        tb = indent * "  "
+        return tb + (
             f"if {self.condition} then {self.value_if_true} else {self.value_if_false}"
         )
 
@@ -73,8 +74,9 @@ class Output(WdlBase):
         self.name = name
         self.expression = expression
 
-    def get_string(self):
-        f = "{type} {name}{def_w_equals}"
+    def get_string(self, indent=0):
+        tb = indent * "  "
+        f = tb + "{type} {name}{def_w_equals}"
         if isinstance(self.type, list):
             return [
                 f.format(
