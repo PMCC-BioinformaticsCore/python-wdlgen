@@ -215,7 +215,7 @@ class Task(WdlBase):
         pre_statements: Optional[List[Union[str, WdlBase]]] = None,
         inputs: List[Input] = None,
         outputs: List[Output] = None,
-        precommand_statements: Optional[List[Union[str, WdlBase]]] = None,
+        noninput_declarations: Optional[List[Union[str, WdlBase]]] = None,
         command: Command = None,
         runtime: Runtime = None,
         version="development",
@@ -233,7 +233,7 @@ class Task(WdlBase):
         self.param_meta = parameter_meta
 
         self.pre_statements = pre_statements or []
-        self.precommand_statements = precommand_statements or []
+        self.noninput_declarations = noninput_declarations or []
 
         self.format = """
 {pre}
@@ -269,7 +269,7 @@ task {name} {{
                 + f"\n{tb}}}"
             )
 
-        if self.precommand_statements:
+        if self.noninput_declarations:
             base_tab = "  " * (indent + 1)
             format_obj = (
                 lambda pi: pi.get_string(indent=indent)
@@ -278,7 +278,7 @@ task {name} {{
             )
 
             blocks.append(
-                "\n".join(format_obj(pi) for pi in self.precommand_statements)
+                "\n".join(format_obj(pi) for pi in self.noninput_declarations)
             )
 
         if self.command:

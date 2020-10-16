@@ -392,7 +392,7 @@ class TestTaskWithExtra(unittest.TestCase):
         t.inputs.extend([Input(String, "inp1"), Input(Int, "inp2")])
 
         t.pre_statements.append(self.struct)
-        t.precommand_statements.append("Name value = object { inp1: inp1, inp2: inp2 }")
+        t.noninput_declarations.append("Name value = object { inp1: inp1, inp2: inp2 }")
 
         t.command = Task.Command("cat ~{write_json(value)}")
 
