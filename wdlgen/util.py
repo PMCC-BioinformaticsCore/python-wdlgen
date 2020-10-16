@@ -15,10 +15,7 @@ def convert_python_value_to_wdl_literal(val) -> str:
         return "true" if val else "false"
     if isinstance(val, str):
         # sanitise string here
-        sanitised = val\
-            .replace("\\", "\\\\")\
-            .replace("\n", "\\n")\
-            .replace('"', '\\"')
+        sanitised = val.replace("\\", "\\\\").replace("\n", "\\n").replace('"', '\\"')
         return f'"{sanitised}"'
 
     return str(val)
@@ -26,7 +23,7 @@ def convert_python_value_to_wdl_literal(val) -> str:
 
 class WdlBase(ABC):
     @abstractmethod
-    def get_string(self):
+    def get_string(self, indent=0):
         raise Exception("Subclass must override .get_string() method")
 
 

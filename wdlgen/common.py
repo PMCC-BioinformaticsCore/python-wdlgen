@@ -10,8 +10,9 @@ class IfThenElse(WdlBase):
         self.value_if_true = value_if_true
         self.value_if_false = value_if_false
 
-    def get_string(self):
-        return (
+    def get_string(self, indent=0):
+        tb = indent * "  "
+        return tb + (
             f"if {self.condition} then {self.value_if_true} else {self.value_if_false}"
         )
 
@@ -31,16 +32,17 @@ class Input(WdlBase):
 
         self.format = "{type} {name}{def_w_equals}"
 
-    def get_string(self):
+    def get_string(self, indent=0):
         if self.type is None:
             raise Exception(
                 f"Could not convert wdlgen.Input ('{self.name}') to string because type was null"
             )
 
+        tb = indent * "  "
         wd = self.type.get_string()
         if isinstance(wd, list):
-            return self.get_string_from_type(wd[0])
-        return self.get_string_from_type(wd)
+            return tb + self.get_string_from_type(wd[0])
+        return tb + self.get_string_from_type(wd)
 
     def get_string_from_type(self, wdtype):
         expression = self.expression
@@ -72,8 +74,9 @@ class Output(WdlBase):
         self.name = name
         self.expression = expression
 
-    def get_string(self):
-        f = "{type} {name}{def_w_equals}"
+    def get_string(self, indent=0):
+        tb = indent * "  "
+        f = tb + "{type} {name}{def_w_equals}"
         if isinstance(self.type, list):
             return [
                 f.format(

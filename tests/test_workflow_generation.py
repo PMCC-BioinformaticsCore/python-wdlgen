@@ -12,7 +12,7 @@ workflow param_meta_scalar {
     test: 42
   }
 }"""
-        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
 
     def test_parameter_meta_string(self):
@@ -26,7 +26,7 @@ workflow param_meta_string {
     other: "string value"
   }
 }"""
-        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
 
     def test_parameter_meta_bool(self):
@@ -41,7 +41,7 @@ workflow param_meta_scalar {
     neg: false
   }
 }"""
-        derived_task_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_task_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_task_only)
 
     def test_parameter_meta_obj(self):
@@ -60,16 +60,14 @@ workflow param_meta_obj {
     obj_value: {help: "This is help text", scalar: 96}
   }
 }"""
-        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
 
     def test_parameter_meta_dict(self):
         w = Workflow(
             "param_meta_obj",
             parameter_meta=ParameterMeta(
-                obj_value={
-                    "help": "This is help text", "scalar": 96
-                }
+                obj_value={"help": "This is help text", "scalar": 96}
             ),
         )
 
@@ -79,8 +77,9 @@ workflow param_meta_obj {
     obj_value: {help: "This is help text", scalar: 96}
   }
 }"""
-        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
+
 
 class TestWorkflowMetaGeneration(unittest.TestCase):
     def test_meta_scalar(self):
@@ -92,7 +91,7 @@ workflow meta_scalar {
     arbitrary_scalar: 42
   }
 }"""
-        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
 
     def test_meta_string(self):
@@ -104,7 +103,7 @@ workflow meta_string {
     author: "illusional"
   }
 }"""
-        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
 
     def test_meta_bool(self):
@@ -117,5 +116,6 @@ workflow meta_scalar {
     neg: false
   }
 }"""
-        derived_task_only = "".join(w.get_string().splitlines(keepends=True)[4:])
+        result = w.get_string()
+        derived_task_only = "".join(result.splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_task_only)

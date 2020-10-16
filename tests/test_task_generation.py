@@ -11,7 +11,9 @@ from wdlgen import (
     WorkflowScatter,
     Meta,
     ParameterMeta,
+    Int,
 )
+from wdlgen.struct import Struct
 
 
 class TestTaskGeneration(unittest.TestCase):
@@ -209,26 +211,20 @@ echo \\
         self.assertEqual("arg=argVal", t.get_string())
 
     def test_commandarg_flag(self):
-        t = Task.Command.CommandInput.from_fields(
-            name="my_value",
-            true="--arg"
-        )
-        self.assertEqual("~{if (my_value) then \"--arg\" else \"\"}", t.get_string())
+        t = Task.Command.CommandInput.from_fields(name="my_value", true="--arg")
+        self.assertEqual('~{if (my_value) then "--arg" else ""}', t.get_string())
 
     def test_commandarg_flag_false(self):
-        t = Task.Command.CommandInput.from_fields(
-            name="my_value",
-            false="--arg"
-        )
-        self.assertEqual("~{if (my_value) then \"\" else \"--arg\"}", t.get_string())
+        t = Task.Command.CommandInput.from_fields(name="my_value", false="--arg")
+        self.assertEqual('~{if (my_value) then "" else "--arg"}', t.get_string())
 
     def test_commandinp_array_inp(self):
         t = Task.Command.CommandInput.from_fields(
-            name="my_array",
-            separator=" ",
-            default=[]
+            name="my_array", separator=" ", default=[]
         )
-        self.assertEqual("~{sep(\" \", if defined(my_array) then my_array else [])}", t.get_string())
+        self.assertEqual(
+            '~{sep(" ", if defined(my_array) then my_array else [])}', t.get_string()
+        )
 
 
 class TestWorkflowGeneration(unittest.TestCase):
@@ -328,9 +324,7 @@ task param_meta_obj {
         w = Task(
             "param_meta_obj",
             parameter_meta=ParameterMeta(
-                obj_value={
-                    "help": "This is help text", "scalar": 96
-                }
+                obj_value={"help": "This is help text", "scalar": 96}
             ),
         )
 
@@ -381,3 +375,31 @@ task meta_string {
 }"""
         derived_workflow_only = "".join(w.get_string().splitlines(keepends=True)[2:])
         self.assertEqual(expected, derived_workflow_only)
+
+
+class TestTaskWithExtra(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        s = Struct("Name")
+        s.add_field(String, "myString")
+        s.add_field(Int, "myInt")
+
+        cls.struct = s
+
+    def test_post_import_struct(self):
+
+        t = Task("hello")
+        t.inputs.extend([Input(String, "inp1"), Input(Int, "inp2")])
+
+        t.pre_statements.append(self.struct)
+        t.noninput_declarations.append("Name value = object { inp1: inp1, inp2: inp2 }")
+
+        t.command = Task.Command("cat ~{write_json(value)}")
+
+        t.outputs.append(
+            Output(
+                WdlType.parse_type("Array[String]"), "matches", "read_string(stdout())"
+            )
+        )
+
+        print(t.get_string())

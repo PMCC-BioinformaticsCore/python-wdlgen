@@ -29,8 +29,9 @@ class PrimitiveType:
             )
         self._type = prim_type
 
-    def get_string(self):
-        return self._type
+    def get_string(self, indent=0):
+        tb = indent * "  "
+        return tb + str(self._type)
 
     @staticmethod
     def parse(prim_type):
@@ -48,9 +49,10 @@ class ArrayType:
         self._subtype: WdlType = WdlType.parse_type(subtype, requires_type=True)
         self._requires_multiple: bool = requires_multiple
 
-    def get_string(self):
+    def get_string(self, indent=0):
+        tb = indent * "  "
 
-        f = ArrayType.kArray + "[{t}]{quantifier}"
+        f = tb + ArrayType.kArray + "[{t}]{quantifier}"
 
         if isinstance(self._subtype, list):
             return [
@@ -111,13 +113,14 @@ class WdlType:
         self._type = type_obj
         self.optional = optional
 
-    def get_string(self):
+    def get_string(self, indent=0):
+        tb = indent *  "  "
 
         wd = self._type.get_string()
         if isinstance(wd, list):
-            return [t + ("?" if self.optional else "") for t in wd]
+            return [tb + t + ("?" if self.optional else "") for t in wd]
         else:
-            return wd + ("?" if self.optional else "")
+            return tb + wd + ("?" if self.optional else "")
 
     @staticmethod
     def parse_type(t, requires_type=True):

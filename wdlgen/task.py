@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .common import Input, Output
 from .util import WdlBase, KvClass, Meta, ParameterMeta
@@ -56,33 +56,34 @@ class Task(WdlBase):
         """
 
         class CommandArgument(WdlBase):
-            def __init__(
-                self,
-                value,
-                    position=None
-            ):
+            def __init__(self, value, position=None):
                 self.value = value
                 self.position = position
 
             @staticmethod
-            def from_fields(prefix: str = None, value: str = None, position: int = None, separate_value_from_prefix: bool = True,):
+            def from_fields(
+                prefix: str = None,
+                value: str = None,
+                position: int = None,
+                separate_value_from_prefix: bool = True,
+            ):
                 pre = prefix if prefix else ""
                 sp = " " if separate_value_from_prefix else ""
                 val = value if value else ""
-                return Task.Command.CommandArgument((pre + sp + val).strip(), position=position)
+                return Task.Command.CommandArgument(
+                    (pre + sp + val).strip(), position=position
+                )
 
-            def get_string(self):
-                return self.value
+            def get_string(self, indent=0):
+                tb = indent * "  "
+                return tb + str(self.value)
 
         class CommandInput(CommandArgument):
             def __init__(
-                self,
-                value,
-                position=None,
+                self, value, position=None,
             ):
                 super().__init__(
-                   value=value,
-                    position=position,
+                    value=value, position=position,
                 )
 
             @staticmethod
@@ -92,7 +93,8 @@ class Task(WdlBase):
                 )
 
             @staticmethod
-            def from_fields(name: str,
+            def from_fields(
+                name: str,
                 optional: bool = False,
                 prefix: str = None,
                 position: int = None,
@@ -101,7 +103,8 @@ class Task(WdlBase):
                 separator=None,
                 true=None,
                 false=None,
-                separate_arrays=None):
+                separate_arrays=None,
+            ):
 
                 name, array_sep, default, true, false = (
                     name,
@@ -123,13 +126,21 @@ class Task(WdlBase):
                         # Ugly optional workaround: https://github.com/openwdl/wdl/issues/25#issuecomment-315424063
                         # Additional workaround for 'length(select_first({name}, [])' as length requires a non-optional array
                         internal_pref = f'if defined({name}) && length(select_first([{name}, []])) > 0 then "{bc}" else ""'
-                        return Task.Command.CommandInput(f'~{{{internal_pref}}}~{{sep(" {bc}", {name})}}', position=position)
-                    return Task.Command.CommandInput(f'~{{sep(" ", prefix("{bc}", {name}))}}', position=position)
+                        return Task.Command.CommandInput(
+                            f'~{{{internal_pref}}}~{{sep(" {bc}", {name})}}',
+                            position=position,
+                        )
+                    return Task.Command.CommandInput(
+                        f'~{{sep(" ", prefix("{bc}", {name}))}}', position=position
+                    )
 
                 elif array_sep and optional:
                     # optional array with separator
                     # ifdefname = f'(if defined({name}) then {name} else [])'
-                    return Task.Command.CommandInput(f'~{{true="{bc}" false="" defined({name})}}~{{sep("{array_sep}", {name})}}', position=position)
+                    return Task.Command.CommandInput(
+                        f'~{{true="{bc}" false="" defined({name})}}~{{sep("{array_sep}", {name})}}',
+                        position=position,
+                    )
 
                 # build up new value from previous options
                 value = name
@@ -157,9 +168,14 @@ class Task(WdlBase):
                         if (separate_value_from_prefix and prefix and prewithquotes)
                         else f"'\"' + {prewithquotes}{value} + '\"'"
                     )
-                    return Task.Command.CommandInput(f'~{{if defined({value}) then ({full_token}) else ""}}', position=position)
+                    return Task.Command.CommandInput(
+                        f'~{{if defined({value}) then ({full_token}) else ""}}',
+                        position=position,
+                    )
                 else:
-                    return Task.Command.CommandInput(bc + f"~{{{value}}}", position=position)
+                    return Task.Command.CommandInput(
+                        bc + f"~{{{value}}}", position=position
+                    )
 
         def __init__(
             self,
@@ -196,11 +212,13 @@ class Task(WdlBase):
     def __init__(
         self,
         name: str,
+        pre_statements: Optional[List[Union[str, WdlBase]]] = None,
         inputs: List[Input] = None,
         outputs: List[Output] = None,
+        noninput_declarations: Optional[List[Union[str, WdlBase]]] = None,
         command: Command = None,
         runtime: Runtime = None,
-        version="draft-2",
+        version="development",
         meta: Meta = None,
         parameter_meta: ParameterMeta = None,
     ):
@@ -214,25 +232,53 @@ class Task(WdlBase):
         self.meta = meta
         self.param_meta = parameter_meta
 
+        self.pre_statements = pre_statements or []
+        self.noninput_declarations = noninput_declarations or []
+
         self.format = """
-version {version}
+{pre}
 
 task {name} {{
 {blocks}
 }}
         """.strip()
 
-    def get_string(self):
-        tb = "  "
+    def get_string(self, indent=0):
+        tb = (indent + 1) * "  "
 
         name = self.name
+        preblocks = [f"version {self.version}"]
         blocks = []
+
+        if self.pre_statements:
+            base_tab = indent * "  "
+            format_obj = (
+                lambda pi: pi.get_string(indent=indent)
+                if hasattr(pi, "get_string")
+                else (base_tab + str(pi))
+            )
+            preblocks.append("\n".join(format_obj(pi) for pi in self.pre_statements))
 
         if self.inputs:
             blocks.append(
                 f"{tb}input {{\n"
-                + "\n".join(2 * tb + i.get_string() for i in self.inputs)
+                + "\n".join(
+                    2 * tb + (i.get_string() if hasattr(i, "get_string") else str(i))
+                    for i in self.inputs
+                )
                 + f"\n{tb}}}"
+            )
+
+        if self.noninput_declarations:
+            base_tab = "  " * (indent + 1)
+            format_obj = (
+                lambda pi: pi.get_string(indent=indent)
+                if hasattr(pi, "get_string")
+                else (base_tab + str(pi))
+            )
+
+            blocks.append(
+                "\n".join(format_obj(pi) for pi in self.noninput_declarations)
             )
 
         if self.command:
@@ -245,30 +291,18 @@ task {name} {{
 
         if self.runtime:
             rt = self.runtime.get_string(indent=2)
-            blocks.append(
-                "{tb}runtime {{\n{args}\n{tb}}}".format(
-                    tb=tb,
-                    args=rt,
-                )
-            )
+            blocks.append("{tb}runtime {{\n{args}\n{tb}}}".format(tb=tb, args=rt,))
 
         if self.meta:
             mt = self.meta.get_string(indent=2)
             if mt:
-                blocks.append(
-                    "{tb}meta {{\n{args}\n{tb}}}".format(
-                        tb=tb, args=mt
-                    )
-                )
+                blocks.append("{tb}meta {{\n{args}\n{tb}}}".format(tb=tb, args=mt))
 
         if self.param_meta:
             pmt = self.param_meta.get_string(indent=2)
             if pmt:
                 blocks.append(
-                    "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
-                        tb=tb,
-                        args=pmt
-                    )
+                    "{tb}parameter_meta {{\n{args}\n{tb}}}".format(tb=tb, args=pmt)
                 )
 
         if self.outputs:
@@ -280,5 +314,5 @@ task {name} {{
             )
 
         return self.format.format(
-            name=name, blocks="\n".join(blocks), version=self.version
+            name=name, pre="\n\n".join(preblocks), blocks="\n".join(blocks),
         )
