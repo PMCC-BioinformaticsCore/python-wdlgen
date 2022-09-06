@@ -242,7 +242,7 @@ class TestWorkflowGeneration(unittest.TestCase):
             WorkflowCall(
                 TestTaskGeneration.test_hello_tasks().name,
                 alias="hello2",
-                inputs_map={"salutation": '"Greetings"', "name": '"Michael"'},
+                inputs_details={"salutation": '"Greetings"', "name": '"Michael"'},
             )
         )
 
@@ -255,8 +255,8 @@ class TestWorkflowScatter(unittest.TestCase):
             "i",
             "integers",
             [
-                WorkflowCall(Task("task1").name, inputs_map={"num": "i"}),
-                WorkflowCall(Task("task2").name, inputs_map={"num": "task1.output"}),
+                WorkflowCall(Task("task1").name, inputs_details={"num": "i"}),
+                WorkflowCall(Task("task2").name, inputs_details={"num": "task1.output"}),
             ],
         )
 
