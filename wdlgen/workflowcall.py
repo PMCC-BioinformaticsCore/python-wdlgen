@@ -23,7 +23,7 @@ class StepValueLine:
     
     @property
     def tag_and_value(self) -> str:
-        return f'{self.tag}={self.value},'
+        return f'{self.tag}={self.value}'
     
     @property
     def info_comment(self) -> str:
@@ -66,7 +66,7 @@ class WorkflowCall(WorkflowCallBase):
 
     def get_string(self, indent: int=1):
         self.tb: str = "  "
-        self.indent: int = 1
+        self.indent: int = indent
         ind = self.indent * self.tb
         name = self.namespaced_identifier
         alias = " as " + self.alias if self.alias else ""  # alias is always being supplied, but this implies its not?
@@ -97,17 +97,18 @@ class WorkflowCall(WorkflowCallBase):
 
         # render 'unknown' input messages
         if self.render_comments:
-            str_lines += [f'{ind}{self.tb}#{m},' for m in self.messages]
+            str_lines += [f'{ind}{self.tb}#{msg},' for msg in self.messages]
         
         # calc longest line so we know how to justify info comments
-        max_line_len = max([ln.length for ln in lines])
+        justification = max([ln.length for ln in lines]) + 2
         
-        # generate string representaiton of each line
-        for ln in lines:
+        # generate string representation of each line
+        for i, ln in enumerate(lines):
+            comma = ',' if i < len(lines) - 1 else ''   # ignore comma for last line
             if self.render_comments:
-                str_line = f'{ind}{self.tb}{ln.tag_and_value:<{max_line_len+2}}{ln.info_comment}'
+                str_line = f'{ind}{self.tb}{ln.tag_and_value + comma:<{justification}}{ln.info_comment}'
             else:
-                str_line = f'{ind}{self.tb}{ln.tag_and_value}'
+                str_line = f'{ind}{self.tb}{ln.tag_and_value + comma}'
             str_lines.append(str_line)
         
         # join lines and return body segment
@@ -143,6 +144,6 @@ class WorkflowScatter(WorkflowCallBase):
 
         body = "\n".join(c.get_string(indent=indent + 1) for c in self.calls)
 
-        return "{ind}scatter ({st}) {{\n {body}\n{ind}}}".format(
+        return "{ind}scatter ({st}) {{\n{body}\n{ind}}}".format(
             ind=indent * "  ", st=scatter_iteration_statement, body=body
         )
