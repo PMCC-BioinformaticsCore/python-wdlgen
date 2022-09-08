@@ -1,39 +1,85 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from functools import cached_property
 from typing import Any, List, Optional
 
 from .util import WdlBase
 
 
 
-@dataclass
 class StepValueLine:
-    tag: str
-    value: Optional[str]
-    special_label: Optional[str]
-    prefix_label: Optional[str]
-    default_label: Optional[str]
-    #default_label: bool
-    datatype_label: str 
+    def __init__(
+        self,
+        tag: str,
+        value: str,
+        special: Optional[str],
+        prefix: Optional[str],
+        default: Optional[str],
+        datatype: Optional[str],
+        ordering: int
+    ):
+        self.tag: str = tag
+        self.value: str = value
+        self.special: str = special if special else ''
+        self.prefix: str = prefix if prefix else ''
+        self.default: str = default if default else ''
+        self.datatype: str = datatype if datatype else ''
+        self.ordering: int = ordering
 
-    @cached_property
-    def length(self) -> int:  
-        return len(f'{self.tag_and_value},')
-    
     @property
     def tag_and_value(self) -> str:
         return f'{self.tag}={self.value}'
+
+    
+class StepValueSection:
+    def __init__(self, lines: list[StepValueLine]):
+        self.lines = self.order_lines(lines)
+        self.padding = 2
+
+    def order_lines(self, lines: list[StepValueLine]) -> list[StepValueLine]:
+        lines.sort(key=lambda x: x.ordering)                    # normal ordering
+        lines.sort(key=lambda x: x.special != '', reverse=True) # 'special' priority
+        return lines
+
+    @property
+    def tag_value_width(self) -> int:
+        width = max([len(f'{x.tag_and_value},') for x in self.lines])
+        return self.add_padding(width)
+
+    @property
+    def datatype_width(self) -> int:
+        width = max([len(x.datatype) for x in self.lines])
+        return self.add_padding(width)
     
     @property
-    def info_comment(self) -> str:
-        prefix = f' {self.prefix_label}' if self.prefix_label is not None else ''
-        datatype = f' [{self.datatype_label}]' if self.datatype_label is not None else ''
-        default = f' ({self.default_label})' if self.default_label is not None else ''
-        special = f' **{self.special_label}' if self.special_label is not None else ''
-        #default = f' (default)' if self.default_label is True else ''
-        return f'#{special}{prefix}{datatype}{default}'
+    def prefix_width(self) -> int:
+        width = max([len(x.prefix) for x in self.lines])
+        return self.add_padding(width)
+    
+    def add_padding(self, width: int) -> int:
+        if width > 0:
+            width += self.padding
+        return width
 
+    def render(self, indent: int, tb: str, render_comments: bool=True) -> str:
+        str_lines: list[str] = []
+        ind = (indent + 1) * tb
+        
+        # generate string representation of each line
+        for i, ln in enumerate(self.lines):
+            comma = ',' if i < len(self.lines) - 1 else ''   # ignore comma for last line
+            tag_value = f'{ln.tag_and_value + comma:<{self.tag_value_width}}'
+            datatype = f'{ln.datatype:<{self.datatype_width}}'
+            prefix = f'{ln.prefix:<{self.prefix_width}}'
+            default = ln.default
+            special = ln.special
+            if render_comments:
+                str_line = f'{ind}{tb}{tag_value}# {datatype}{prefix}{default}  {special}'
+            else:
+                str_line = f'{ind}{tb}{tag_value}'
+            str_lines.append(str_line)
+        
+        # join lines and return body segment
+        inputs = '\n'.join(str_lines)
+        return f"{{\n{ind}input:\n{inputs}"
 
 
 class WorkflowCallBase(WdlBase, ABC):
@@ -71,11 +117,13 @@ class WorkflowCall(WorkflowCallBase):
         name = self.namespaced_identifier
         alias = " as " + self.alias if self.alias else ""  # alias is always being supplied, but this implies its not?
         body = self.get_body()
-        return f"{ind}call {name}{alias} {body}\n{ind}}}"
+        msgs = '\n'.join([f'{ind}#{msg}' for msg in self.messages]) + '\n' if self.render_comments else ''
+        return f"{msgs}{ind}call {name}{alias} {body}\n{ind}}}"
 
     def get_body(self) -> str:
-        lines = self.init_known_input_lines()
-        return self.input_section_to_string(lines)
+        value_lines = self.init_known_input_lines()
+        value_section = StepValueSection(value_lines)
+        return value_section.render(indent=self.indent, tb=self.tb, render_comments=self.render_comments)
 
     def init_known_input_lines(self) -> list[StepValueLine]:
         out: list[StepValueLine] = []
@@ -83,37 +131,14 @@ class WorkflowCall(WorkflowCallBase):
             line = StepValueLine(
                 tag=tag, 
                 value=d['value'], 
-                special_label=d['special_label'], 
-                prefix_label=d['prefix'], 
-                default_label=d['default'], 
-                datatype_label=d['datatype']
+                special=d['special_label'], 
+                prefix=d['prefix'], 
+                default=d['default'], 
+                datatype=d['datatype'],
+                ordering=d['ordering']
             )
             out.append(line)
         return out
-        
-    def input_section_to_string(self, lines: list[StepValueLine]) -> str:
-        str_lines: list[str] = []
-        ind = (self.indent + 1) * self.tb
-
-        # render 'unknown' input messages
-        if self.render_comments:
-            str_lines += [f'{ind}{self.tb}#{msg},' for msg in self.messages]
-        
-        # calc longest line so we know how to justify info comments
-        justification = max([ln.length for ln in lines]) + 2
-        
-        # generate string representation of each line
-        for i, ln in enumerate(lines):
-            comma = ',' if i < len(lines) - 1 else ''   # ignore comma for last line
-            if self.render_comments:
-                str_line = f'{ind}{self.tb}{ln.tag_and_value + comma:<{justification}}{ln.info_comment}'
-            else:
-                str_line = f'{ind}{self.tb}{ln.tag_and_value + comma}'
-            str_lines.append(str_line)
-        
-        # join lines and return body segment
-        inputs = '\n'.join(str_lines)
-        return f"{{\n{ind}input:\n{inputs}"
 
 
 
