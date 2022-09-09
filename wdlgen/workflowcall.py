@@ -1,28 +1,21 @@
+
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Optional
 
 from .util import WdlBase
 
 
 
+@dataclass
 class StepValueLine:
-    def __init__(
-        self,
-        tag: str,
-        value: str,
-        special: Optional[str],
-        prefix: Optional[str],
-        default: Optional[str],
-        datatype: Optional[str],
-        ordering: int
-    ):
-        self.tag: str = tag
-        self.value: str = value
-        self.special: str = special if special else ''
-        self.prefix: str = prefix if prefix else ''
-        self.default: str = default if default else ''
-        self.datatype: str = datatype if datatype else ''
-        self.ordering: int = ordering
+    tag: str
+    value: str
+    position: int = 999
+    special: Optional[str] = None
+    prefix: Optional[str] = None
+    default: Optional[str] = None
+    datatype: Optional[str] = None
 
     @property
     def tag_and_value(self) -> str:
@@ -35,7 +28,7 @@ class StepValueSection:
         self.padding = 2
 
     def order_lines(self, lines: list[StepValueLine]) -> list[StepValueLine]:
-        lines.sort(key=lambda x: x.ordering)                    # normal ordering
+        lines.sort(key=lambda x: x.position)                    # normal position
         lines.sort(key=lambda x: x.special != '', reverse=True) # 'special' priority
         return lines
 
@@ -46,12 +39,18 @@ class StepValueSection:
 
     @property
     def datatype_width(self) -> int:
-        width = max([len(x.datatype) for x in self.lines])
+        lines = [x for x in self.lines if x.datatype is not None]
+        if not lines:
+            return 0
+        width = max([len(x.datatype) for x in lines]) # type: ignore
         return self.add_padding(width)
     
     @property
     def prefix_width(self) -> int:
-        width = max([len(x.prefix) for x in self.lines])
+        lines = [x for x in self.lines if x.prefix is not None]
+        if not lines:
+            return 0
+        width = max([len(x.prefix) for x in lines]) # type: ignore
         return self.add_padding(width)
     
     def add_padding(self, width: int) -> int:
@@ -66,14 +65,16 @@ class StepValueSection:
         # generate string representation of each line
         for i, ln in enumerate(self.lines):
             comma = ',' if i < len(self.lines) - 1 else ''   # ignore comma for last line
-            tag_value = f'{ln.tag_and_value + comma:<{self.tag_value_width}}'
-            datatype = f'{ln.datatype:<{self.datatype_width}}'
-            prefix = f'{ln.prefix:<{self.prefix_width}}'
-            default = ln.default
-            special = ln.special
+            datatype = f'{ln.datatype:<{self.datatype_width}}' if ln.datatype else ''
+            prefix = f'{ln.prefix:<{self.prefix_width}}' if ln.prefix else ''
+            default = ln.default if ln.default else ''
+            special = ln.special if ln.special else ''
+            
             if render_comments:
+                tag_value = f'{ln.tag_and_value + comma:<{self.tag_value_width}}'
                 str_line = f'{ind}{tb}{tag_value}# {datatype}{prefix}{default}  {special}'
             else:
+                tag_value = f'{ln.tag_and_value + comma}'
                 str_line = f'{ind}{tb}{tag_value}'
             str_lines.append(str_line)
         
@@ -93,11 +94,15 @@ class WorkflowCall(WorkflowCallBase):
     def __init__(
         self,
         namespaced_identifier: str,
-        alias: str,
-        inputs_details: dict[str, dict[str, Any]],
-        messages: list[str],
+        alias: Optional[str] = None,
+        inputs_details: dict[str, dict[str, Any]] = {},
+        messages: Optional[list[str]] = None,
         render_comments: bool = True
     ):
+        """
+        would prefer the 'inputs_details' to be an object, but 
+        don't want to have a shared dependency between janis-core and wdlgen.
+        """
         """
         :param task:
         :param namespaced_identifier: Required if task is imported. The workflow might take care of this later?
@@ -107,18 +112,18 @@ class WorkflowCall(WorkflowCallBase):
         self.namespaced_identifier = namespaced_identifier
         self.alias = alias
         self.inputs_details = inputs_details
-        self.messages = messages
+        self.messages: list[str] = messages if messages else []
         self.render_comments = render_comments
 
     def get_string(self, indent: int=1):
-        self.tb: str = "  "
+        self.tb: str = '  '
         self.indent: int = indent
         ind = self.indent * self.tb
         name = self.namespaced_identifier
-        alias = " as " + self.alias if self.alias else ""  # alias is always being supplied, but this implies its not?
+        alias = ' as ' + self.alias if self.alias else ''
         body = self.get_body()
         msgs = '\n'.join([f'{ind}#{msg}' for msg in self.messages]) + '\n' if self.render_comments else ''
-        return f"{msgs}{ind}call {name}{alias} {body}\n{ind}}}"
+        return f'{msgs}{ind}call {name}{alias} {body}\n{ind}}}'
 
     def get_body(self) -> str:
         value_lines = self.init_known_input_lines()
@@ -128,15 +133,12 @@ class WorkflowCall(WorkflowCallBase):
     def init_known_input_lines(self) -> list[StepValueLine]:
         out: list[StepValueLine] = []
         for tag, d in self.inputs_details.items():
-            line = StepValueLine(
-                tag=tag, 
-                value=d['value'], 
-                special=d['special_label'], 
-                prefix=d['prefix'], 
-                default=d['default'], 
-                datatype=d['datatype'],
-                ordering=d['ordering']
-            )
+            # init line
+            line = StepValueLine(tag=tag, value=d['value'])
+            # set optional info
+            for key, val in d.items():
+                if hasattr(line, key):
+                    setattr(line, key, val)
             out.append(line)
         return out
 
