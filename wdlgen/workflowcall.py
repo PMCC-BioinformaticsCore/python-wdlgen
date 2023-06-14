@@ -122,7 +122,10 @@ class WorkflowCall(WorkflowCallBase):
         name = self.namespaced_identifier
         alias = ' as ' + self.alias if self.alias else ''
         body = self.get_body()
-        msgs = '\n'.join([f'{ind}#{msg}' for msg in self.messages]) + '\n' if self.render_comments else ''
+        if self.render_comments and self.messages:
+            msgs = '\n'.join([f'{ind}#{msg}' for msg in self.messages]) + '\n'
+        else:
+            msgs = ''
         return f'{msgs}{ind}call {name}{alias} {body}\n{ind}}}'
 
     def get_body(self) -> str:
@@ -141,7 +144,6 @@ class WorkflowCall(WorkflowCallBase):
                     setattr(line, key, val)
             out.append(line)
         return out
-
 
 
 class WorkflowConditional(WorkflowCallBase):
