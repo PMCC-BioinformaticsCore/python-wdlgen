@@ -232,7 +232,7 @@ task {name} {{
             blocks.append(
                 f"{tb}input {{\n"
                 + "\n".join(2 * tb + i.get_string() for i in self.inputs)
-                + f"\n{tb}}}"
+                + f"\n{tb}}}\n"
             )
 
         if self.command:
@@ -241,12 +241,12 @@ task {name} {{
                 com = "\n".join(c.get_string(indent=2) for c in self.command)
             else:
                 com = self.command.get_string(indent=2)
-            blocks.append("{tb}command <<<\n{args}\n{tb}>>>".format(tb=tb, args=com))
+            blocks.append("{tb}command <<<\n{args}\n{tb}>>>\n".format(tb=tb, args=com))
 
         if self.runtime:
             rt = self.runtime.get_string(indent=2)
             blocks.append(
-                "{tb}runtime {{\n{args}\n{tb}}}".format(
+                "{tb}runtime {{\n{args}\n{tb}}}\n".format(
                     tb=tb,
                     args=rt,
                 )
@@ -256,7 +256,7 @@ task {name} {{
             mt = self.meta.get_string(indent=2)
             if mt:
                 blocks.append(
-                    "{tb}meta {{\n{args}\n{tb}}}".format(
+                    "{tb}meta {{\n{args}\n{tb}}}\n".format(
                         tb=tb, args=mt
                     )
                 )
@@ -265,7 +265,7 @@ task {name} {{
             pmt = self.param_meta.get_string(indent=2)
             if pmt:
                 blocks.append(
-                    "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
+                    "{tb}parameter_meta {{\n{args}\n{tb}}}\n".format(
                         tb=tb,
                         args=pmt
                     )
@@ -273,7 +273,7 @@ task {name} {{
 
         if self.outputs:
             blocks.append(
-                "{tb}output {{\n{outs}\n{tb}}}".format(
+                "{tb}output {{\n{outs}\n{tb}}}\n".format(
                     tb=tb,
                     outs="\n".join((2 * tb) + o.get_string() for o in self.outputs),
                 )
