@@ -46,6 +46,7 @@ version {version}
 
 workflow {name} {{
 {blocks}
+
 }}""".strip()
 
     def get_string(self):
@@ -63,10 +64,10 @@ workflow {name} {{
                     ins.extend(2 * tb + ii for ii in wd)
                 else:
                     ins.append(2 * tb + wd)
-            blocks.append(f"{tb}input {{\n" + "\n".join(ins) + f"\n{tb}}}")
+            blocks.append(f"\n{tb}input {{\n" + "\n".join(ins) + f"\n{tb}}}")
 
         if self.calls:
-            blocks.append("\n".join(c.get_string(indent=1) for c in self.calls))
+            blocks.append("\n" + "\n\n".join(c.get_string(indent=1) for c in self.calls))
 
         if self.imports:
             imports_block = "\n".join(i.get_string() for i in self.imports)
@@ -75,7 +76,7 @@ workflow {name} {{
             mt = self.meta.get_string(indent=2)
             if mt:
                 blocks.append(
-                    "{tb}meta {{\n{args}\n{tb}}}".format(
+                    "\n{tb}meta {{\n{args}\n{tb}}}".format(
                         tb=tb, args=mt
                     )
                 )
@@ -84,7 +85,7 @@ workflow {name} {{
             pmt = self.param_meta.get_string(indent=2)
             if pmt:
                 blocks.append(
-                    "{tb}parameter_meta {{\n{args}\n{tb}}}".format(
+                    "\n{tb}parameter_meta {{\n{args}\n{tb}}}".format(
                         tb=tb,
                         args=pmt
                     )
@@ -103,7 +104,7 @@ workflow {name} {{
                 else:
                     outs.append(str(o))
             blocks.append(
-                "{tb}output {{\n{outs}\n{tb}}}".format(tb=tb, outs="\n".join(outs))
+                "\n{tb}output {{\n{outs}\n{tb}}}".format(tb=tb, outs="\n".join(outs))
             )
 
         return self.format.format(

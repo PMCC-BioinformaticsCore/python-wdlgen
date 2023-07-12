@@ -4,4 +4,6 @@ __pycache__/
 **/**/DS_Store
 build/
 dist/
+venv/
 illusional.wdlgen.egg-info
+*.egg-info
