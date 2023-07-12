@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = "v0.3.1.2"
+__version__ = "v0.3.1"
 
 DESCRIPTION = (
     "Contains classes and helpers to generate WDL without worrying about the syntax. "
@@ -16,9 +16,9 @@ setup(
     name="illusional.wdlgen",
     version=__version__,
     description=DESCRIPTION,
-    url="https://github.com/illusional/python-wdlgen",
-    author="Michael Franklin",
-    author_email="michael.franklin@petermac.org",
+    url="https://github.com/PMCC-BioinformaticsCore/python-wdlgen",
+    author="Richard Lupat",
+    author_email="richard.lupat@petermac.org",
     license="GNU",
     packages=["wdlgen"],
     install_requires=[],
